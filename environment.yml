@@ -8,6 +8,7 @@ channels:
   - defaults
 dependencies:
   - notebook
+  - jupyterlab
   - cdo=2.*.*
   - matplotlib
   - xarray
