@@ -1,9 +1,10 @@
 # Misc - added by BSG
 temp_*
+temp.*
 temp/
 .DS_Store
-figs/
-figs_*/
+*.pdf
+*pdf
 *~
 
 # Byte-compiled / optimized / DLL files
