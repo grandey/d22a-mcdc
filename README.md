@@ -10,7 +10,13 @@ To create a _conda_ environment with the necessary software dependencies, use th
 
 ```
 conda env create --file environment.yml
+conda activate d22a-mcdc
 ```
+
+The analysis has been performed within this environment on _macOS 12_.
+
+_Windows_ users may need to remove the references to _Climate Data Operators_ (`cdo`, `python-cdo`) in [`environment.yml`](environment.yml).
+CDO is required by [`data_d22a.ipynb`](data_d22a.ipynb), but not by [`mcdc_analysis_d22a.ipynb`](mcdc_analysis_d22a.ipynb).
 
 ### Preparation of data
 _CMIP6_ climate model data have been downloaded, post-processed, and prepared as follows:
@@ -21,7 +27,7 @@ _CMIP6_ climate model data have been downloaded, post-processed, and prepared as
 (i) regridding two-dimensional variables to a regular longitude-latitude grid (using first-order conservative remapping for unstructured grids, using bicubic interpolation for other grids),
 (ii) setting missing data to zero before and after regridding (because the sea-surface heat flux is not defined over land),
 (iii) calculation of annual means, and
-(iv) calculation of area-weighted global-means
+(iv) calculation of area-weighted global means
 (see [**p22c-esgf-processing v0.1.0**](https://github.com/grandey/p22c-esgf-processing/tree/v0.1.0)).
 
 3. Data have then been prepared for further analysis using [**`data_d22a.ipynb`**](data_d22a.ipynb) (in this repository).
