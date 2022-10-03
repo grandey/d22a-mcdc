@@ -37,7 +37,11 @@ The NetCDF files produced by [`data_d22a.ipynb`](data_d22a.ipynb) can be found i
 ### Analysis
 Analysis of the data in [`data/`](data/) is performed using [**`mcdc_analysis_d22a.ipynb`**](mcdc_analysis_d22a.ipynb).
 
-[`mcdc_analysis_d22a.ipynb`](mcdc_analysis_d22a.ipynb) contains the Monte Carlo Drift Correction functions, and it writes both figures (in [**`figs_d22a/`**](figs_d22a/)) and tables (in [**`tables_d22a/`**](tables_d22a/)).
+[`mcdc_analysis_d22a.ipynb`](mcdc_analysis_d22a.ipynb) contains the Monte Carlo Drift Correction (MCDC) functions, and it writes both figures (in [**`figs_d22a/`**](figs_d22a/)) and tables (in [**`tables_d22a/`**](tables_d22a/)).
+
+Are the trend-method MCDC results sensitive to the choice of estimation method?
+The analysis has been re-run using a robust linear model with Huber’s T norm (instead of ordinary least squares): [**`rlm/`**](rlm/).
+The results are similar.
 
 ## Author of code
 Benjamin S. Grandey (_Nanyang Technological University_).
