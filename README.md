@@ -21,14 +21,14 @@ CDO is required by [`data_d22a.ipynb`](data_d22a.ipynb), but not by [`mcdc_analy
 ### Preparation of data
 _CMIP6_ climate model data have been downloaded, post-processed, and prepared as follows:
 
-1. Data have been **downloaded** from the _Earth System Grid Federation (ESGF)_ using the _ESGF PyClient_ and _Globus_ (see [**p22b-esgf-globus v0.1.0**](https://github.com/grandey/p22b-esgf-globus/tree/v0.1.0)).
+1. Data have been **downloaded** from the _Earth System Grid Federation (ESGF)_ using the _ESGF PyClient_ and _Globus_ (see [**p22b-esgf-globus v0.2.0**](https://github.com/grandey/p22b-esgf-globus/tree/v0.2.0)).
 
-2. Data have been **post-processed** using _Climate Data Operators (CDO)_, including
-(i) regridding two-dimensional variables to a regular longitude-latitude grid (using first-order conservative remapping for unstructured grids, using bicubic interpolation for other grids),
-(ii) setting missing data to zero before and after regridding (because the sea-surface heat flux is not defined over land),
-(iii) calculation of annual means, and
-(iv) calculation of area-weighted global means
-(see [**p22c-esgf-processing v0.1.0**](https://github.com/grandey/p22c-esgf-processing/tree/v0.1.0)).
+2. Data have been **post-processed** using _Climate Data Operators (CDO)_.
+This includes the following steps:
+(i) calculate annual means,
+(ii) multiply each flux variable with the corresponding grid cell area, then
+(iii) sum globally
+(see [**p22c-esgf-processing v0.2.0**](https://github.com/grandey/p22c-esgf-processing/tree/v0.2.0)).
 
 3. Data have then been prepared for further analysis using [**`data_d22a.ipynb`**](data_d22a.ipynb) (in this repository).
 
@@ -43,11 +43,8 @@ Are the trend-method MCDC results sensitive to the choice of estimation method?
 The analysis has been re-run using a robust linear model with Huber’s T norm (instead of ordinary least squares): [**`rlm/`**](rlm/).
 The results are similar.
 
-## Author of code
-Benjamin S. Grandey (_Nanyang Technological University_).
-
-## Other contributors
-Zhi Yang Koh, Dhrubajyoti Samanta, Benjamin P. Horton, Justin Dauwels, and Lock Yue Chew have all made significant contributions to the research project.
+## Author
+Benjamin S. Grandey (_Nanyang Technological University_), in collaboration with Zhi Yang Koh, Dhrubajyoti Samanta, Benjamin P. Horton, Justin Dauwels, and Lock Yue Chew.
 
 ## Acknowledgements
 This Research/Project is supported by the National Research Foundation, Singapore, and National Environment Agency, Singapore under the National Sea Level Programme Funding Initiative (Award No. USS-IF-2020-3).
