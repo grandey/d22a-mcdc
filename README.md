@@ -1,7 +1,6 @@
-# d22a-mcdc
+# d22a-mcdc: Analysis Code for "Monte Carlo Drift Correction – Quantifying the Drift Uncertainty of Global Climate Models"
 
-## Description
-Analysis code for "**_Monte Carlo Drift Correction - Quantifying the Drift Uncertainty of Global Climate Models_**".
+[![DOI](https://zenodo.org/badge/521571893.svg)](https://zenodo.org/badge/latestdoi/521571893)
 
 ## Workflow
 
