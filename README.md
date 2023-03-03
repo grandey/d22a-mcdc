@@ -2,6 +2,17 @@
 
 [![DOI](https://zenodo.org/badge/521571893.svg)](https://zenodo.org/badge/latestdoi/521571893)
 
+## Usage guidelines
+This repository accompanies the following manuscript:
+
+Grandey, B. S., Koh, Z. Y., Samanta, D., Horton, B. P., Dauwels, J., and Chew, L. Y. (2013),  **Monte Carlo Drift Correction – Quantifying the Drift Uncertainty of Global Climate Models**, _EGUsphere [preprint]_, https://doi.org/10.5194/egusphere-2022-1515.
+
+The [manuscript](https://doi.org/10.5194/egusphere-2022-1515) serves as the primary reference.
+The [Zenodo archive](https://doi.org/10.5281/zenodo.7488334) of this repository serves as a secondary reference.
+
+The [**`data/`**](data/) folder contains post-processed _CMIP6_ climate model data.
+Users of these data should note the [CMIP6 Terms of Use](https://pcmdi.llnl.gov/CMIP6/TermsOfUse/TermsOfUse6-2.html), including an appropriate acknowledgement.
+
 ## Workflow
 
 ### Setup
@@ -43,7 +54,7 @@ The analysis has been re-run using a robust linear model with Huber’s T norm (
 The results are similar.
 
 ## Author
-Benjamin S. Grandey (_Nanyang Technological University_), in collaboration with Zhi Yang Koh, Dhrubajyoti Samanta, Benjamin P. Horton, Justin Dauwels, and Lock Yue Chew.
+[Benjamin S. Grandey](https://grandey.github.io) (_Nanyang Technological University_), in collaboration with Zhi Yang Koh, Dhrubajyoti Samanta, Benjamin P. Horton, Justin Dauwels, and Lock Yue Chew.
 
 ## Acknowledgements
 This Research/Project is supported by the National Research Foundation, Singapore, and National Environment Agency, Singapore under the National Sea Level Programme Funding Initiative (Award No. USS-IF-2020-3).
