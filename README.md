@@ -11,7 +11,7 @@ The [manuscript](https://doi.org/10.5194/egusphere-2022-1515) serves as the prim
 The [Zenodo archive](https://doi.org/10.5281/zenodo.7488334) of this repository serves as a secondary reference.
 
 The [**`data/`**](data/) folder contains post-processed _CMIP6_ climate model data.
-Users of these data should note the [CMIP6 Terms of Use](https://pcmdi.llnl.gov/CMIP6/TermsOfUse/TermsOfUse6-2.html), including an appropriate acknowledgement.
+Users of these data should note the [CMIP6 Terms of Use](https://pcmdi.llnl.gov/CMIP6/TermsOfUse/TermsOfUse6-2.html).
 
 ## Workflow
 
