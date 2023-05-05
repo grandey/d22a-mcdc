@@ -5,10 +5,10 @@
 ## Usage guidelines
 This repository accompanies the following manuscript:
 
-Grandey, B. S., Koh, Z. Y., Samanta, D., Horton, B. P., Dauwels, J., and Chew, L. Y. (2013),  **Monte Carlo Drift Correction – Quantifying the Drift Uncertainty of Global Climate Models**, _EGUsphere [preprint]_, https://doi.org/10.5194/egusphere-2022-1515.
+B. S. Grandey, Z. Y. Koh, D. Samanta, B. P. Horton, J. Dauwels, and L. Y. Chew (2023),  **Monte Carlo Drift Correction – Quantifying the Drift Uncertainty of Global Climate Models**, _EGUsphere [preprint]_, https://doi.org/10.5194/egusphere-2022-1515.
 
-The [manuscript](https://doi.org/10.5194/egusphere-2022-1515) serves as the primary reference.
-The [Zenodo archive](https://doi.org/10.5281/zenodo.7488334) of this repository serves as a secondary reference.
+The manuscript serves as the primary reference.
+The Zenodo archive of this repository serves as a secondary reference.
 
 The [**`data/`**](data/) folder contains post-processed _CMIP6_ climate model data.
 Users of these data should note the [CMIP6 Terms of Use](https://pcmdi.llnl.gov/CMIP6/TermsOfUse/TermsOfUse6-2.html).
