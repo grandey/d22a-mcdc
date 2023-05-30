@@ -23,7 +23,7 @@ conda env create --file environment.yml
 conda activate d22a-mcdc
 ```
 
-The analysis has been performed within this environment on _macOS 12_.
+The analysis has been performed within this environment on _macOS 13_ (arm64).
 
 _Windows_ users may need to remove the references to _Climate Data Operators_ (`cdo`, `python-cdo`) in [`environment.yml`](environment.yml).
 CDO is required by [`data_d22a.ipynb`](data_d22a.ipynb), but not by [`mcdc_analysis_d22a.ipynb`](mcdc_analysis_d22a.ipynb).
