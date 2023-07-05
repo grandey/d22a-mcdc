@@ -10,8 +10,7 @@ dependencies:
   - notebook
   - jupyterlab
   - cdo=2.*.*
-  - matplotlib=3.5.*
-  - seaborn
+  - matplotlib
   - xarray
   - NetCDF4
   - python-cdo=1.5.*
