@@ -109,7 +109,7 @@ def get_cmip6_df(esm=True, scenario=True):
     - E, H, and Z are referenced to the 1995-2014 mean.
     """
     # Create DataFrame to hold data
-    col_list = ['ESM', 'Scenario', 'Year', 'Ep', 'E', 'Hp', 'H', 'Z']
+    col_list = ['ESM', 'Scenario', 'Year', 'Ep', 'E', 'Hp', 'H', 'Z', 'convert_Wm2yr_YJ']
     cmip6_df = pd.DataFrame(columns=col_list)
     # If esm is True, update esm to include all available ESMs (based on zostoga availability)
     if esm is True:
@@ -209,6 +209,7 @@ def get_cmip6_df(esm=True, scenario=True):
         cmip6_df['Z'] = Z.data
         cmip6_df['ESM'] = esm
         cmip6_df['Scenario'] = scenario
+        cmip6_df['convert_Wm2yr_YJ'] = convert_Wm2yr_YJ
     return cmip6_df
 
 
@@ -217,28 +218,34 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
     """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
     # Get control time series and convert to DataArray
     pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
-    # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
-    # In names of np arrays, t refers to year/time dimension, k to order of polynomial term, and n to sample draw
-    x_tk = np.stack([(pi_da.Year - 2005)**k for k in range(degree+1)]).transpose()  # use 2005 as base year
-    sm_reg = sm.OLS(pi_da.data, x_tk).fit().get_robustcov_results(cov_type='HAC', maxlags=100)
-    # Sample parameters and standard error, assuming Gaussian distribution
-    params_nk = RNG.normal(loc=sm_reg.params, scale=sm_reg.bse, size=(sample_n, degree+1))
-    # Sample drift using the parameter samples
-    drift_nt = (params_nk[:, np.newaxis, :] * x_tk[np.newaxis, :, :]).sum(axis=2)  # array
-    drift_da = xr.DataArray(drift_nt, dims=['Draw', 'Year'],
-                            coords={'Draw': range(sample_n), 'Year': pi_da.Year})  # DataArray
-    # If degree >= 1, reference to 1995-2014 mean
-    if degree >= 1:
+    # If degree is an integer, then use a polynomial of that degree
+    if isinstance(degree, int):
+        # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
+        # In names of np arrays, t refers to year/time dimension, k to order of polynomial term, and n to sample draw
+        x_tk = np.stack([(pi_da.Year - 2005)**k for k in range(degree+1)]).transpose()  # use 2005 as base year
+        sm_reg = sm.OLS(pi_da.data, x_tk).fit().get_robustcov_results(cov_type='HAC', maxlags=100)
+        # Sample parameters and standard error, assuming Gaussian distribution
+        params_nk = RNG.normal(loc=sm_reg.params, scale=sm_reg.bse, size=(sample_n, degree+1))
+        # Sample drift using the parameter samples
+        drift_nt = (params_nk[:, np.newaxis, :] * x_tk[np.newaxis, :, :]).sum(axis=2)  # array
+        drift_da = xr.DataArray(drift_nt, dims=['Draw', 'Year'],
+                                coords={'Draw': range(sample_n), 'Year': pi_da.Year})  # DataArray
+    # If degree is "int.-bias", apply integrated-bias method
+    elif degree == 'int.-bias':
+        # Call recursively to get bias samples of corresponding flux variable
+        bias_da = sample_drift(esm=esm, variable=f'{variable}p', degree=0, sample_n=SAMPLE_N, plot=False)
+        # Cumulatively integrate bias samples
+        convert_Wm2yr_YJ = get_cmip6_df(esm=esm, scenario='piControl')['convert_Wm2yr_YJ'][0]
+        drift_da = bias_da.cumsum(dim='Year') * convert_Wm2yr_YJ
+    # If degree != 0, reference to 1995-2014 mean
+    if degree != 0:
         drift_da -= drift_da.sel(Year=slice(1995, 2014)).mean(dim='Year')
     # Plot?
     if plot:
         pi_da.plot(color='0.2', label=f'{esm} control')
         for i in range(sample_n):
             if i == 0:
-                if degree >= 0:
-                    label = f'Drift samples (n = {sample_n}; degree = {degree}'
-                else:
-                    label = f'Bias samples (n = {sample_n})'
+                label = f'Drift samples (n = {sample_n}; degree = {degree})'
             else:
                 label = None
             drift_da.isel(Draw=i).plot(color='r', alpha=10/sample_n, label=label)
