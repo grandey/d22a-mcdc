@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pathlib
+import statsmodels.api as sm
 from watermark import watermark
 import xarray as xr
 
@@ -45,6 +46,10 @@ UNITS_DICT = {'Ep': "W m$^{-2}$",
               'eta': "unitless",
               'eps': "mm YJ$^{-1}$",
               }
+
+SAMPLE_N = 100  # number of drift samples to drawn
+
+RNG = np.random.default_rng(12345)  # random number generator
 
 
 def get_watermark():
@@ -101,8 +106,7 @@ def get_cmip6_df(esm=True, scenario=True):
 
     Notes
     -----
-    - For SSP scenarios, data are referenced to the 2000-2010 mean. Otherwise, data are referenced to first 11 years.
-    - Requires data produced by data_dTBD_epsilon.ipynb.
+    - E, H, and Z are referenced to the 1995-2014 mean.
     """
     # Create DataFrame to hold data
     col_list = ['ESM', 'Scenario', 'Year', 'Ep', 'E', 'Hp', 'H', 'Z']
@@ -206,3 +210,40 @@ def get_cmip6_df(esm=True, scenario=True):
         cmip6_df['ESM'] = esm
         cmip6_df['Scenario'] = scenario
     return cmip6_df
+
+
+@cache
+def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SAMPLE_N, plot=False):
+    """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
+    # Get control time series and convert to DataArray
+    pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
+    # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
+    # In names of np arrays, t refers to year/time dimension, k to order of polynomial term, and n to sample draw
+    x_tk = np.stack([(pi_da.Year - 2005)**k for k in range(degree+1)]).transpose()  # use 2005 as base year
+    sm_reg = sm.OLS(pi_da.data, x_tk).fit().get_robustcov_results(cov_type='HAC', maxlags=100)
+    # Sample parameters and standard error, assuming Gaussian distribution
+    params_nk = RNG.normal(loc=sm_reg.params, scale=sm_reg.bse, size=(sample_n, degree+1))
+    # Sample drift using the parameter samples
+    drift_nt = (params_nk[:, np.newaxis, :] * x_tk[np.newaxis, :, :]).sum(axis=2)  # array
+    drift_da = xr.DataArray(drift_nt, dims=['Draw', 'Year'],
+                            coords={'Draw': range(sample_n), 'Year': pi_da.Year})  # DataArray
+    # If degree >= 1, reference to 1995-2014 mean
+    if degree >= 1:
+        drift_da -= drift_da.sel(Year=slice(1995, 2014)).mean(dim='Year')
+    # Plot?
+    if plot:
+        pi_da.plot(color='0.2', label=f'{esm} control')
+        for i in range(sample_n):
+            if i == 0:
+                if degree >= 0:
+                    label = f'Drift samples (n = {sample_n}; degree = {degree}'
+                else:
+                    label = f'Bias samples (n = {sample_n})'
+            else:
+                label = None
+            drift_da.isel(Draw=i).plot(color='r', alpha=10/sample_n, label=label)
+        drift_da.mean(dim='Draw').plot(color='blue', label='Mean of samples')
+        plt.legend()
+        plt.ylabel(f'{variable} ({UNITS_DICT[variable]})')
+        plt.show()
+    return drift_da
