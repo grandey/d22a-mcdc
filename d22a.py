@@ -268,3 +268,32 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
         plt.ylabel(f'{variable} ({UNITS_DICT[variable]})')
         plt.show()
     return drift_da
+
+
+@cache
+def sample_corrected(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenario='historical',
+                     sample_n=SAMPLE_N, plot=False):
+    """Apply MCDC to get drift corrected samples. Returns samples as DataArray."""
+    # Get uncorrected time series for scenario and convert to DataArray
+    uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[variable].to_xarray()
+    # Get drift samples
+    drift_da = sample_drift(esm=esm, variable=variable, degree=degree, sample_n=sample_n, plot=False)
+    # Apply drift correction
+    corr_da = uncorr_da - drift_da
+    # If degree != 0, reference to 1995-2014 mean
+    if degree != 0:
+        corr_da -= corr_da.sel(Year=slice(1995, 2014)).mean(dim='Year')
+    # Plot?
+    if plot:
+        uncorr_da.plot(color='0.2', label=f'{esm} {scenario}')
+        for i in range(sample_n):
+            if i == 0:
+                label = f'Corrected samples (n = {sample_n}; degree = {degree})'
+            else:
+                label = None
+            corr_da.isel(Draw=i).plot(color='r', alpha=10/sample_n, label=label)
+        corr_da.mean(dim='Draw').plot(color='blue', label='Mean of samples')
+        plt.legend()
+        plt.ylabel(f'{variable} ({UNITS_DICT[variable]})')
+        plt.show()
+    return corr_da
