@@ -220,23 +220,37 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
     pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
     # If degree is an integer, then use a polynomial of that degree
     if isinstance(degree, int):
-        # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
-        # In names of np arrays, t refers to year/time dimension, k to order of polynomial term, and n to sample draw
+        # Predictors; t refers to year/time dimension, k to order of polynomial term
         x_tk = np.stack([(pi_da.Year - 2005)**k for k in range(degree+1)]).transpose()  # use 2005 as base year
+        # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
         sm_reg = sm.OLS(pi_da.data, x_tk).fit().get_robustcov_results(cov_type='HAC', maxlags=100)
-        # Sample parameters and standard error, assuming Gaussian distribution
+        # Sample parameters and standard error, assuming Gaussian distribution; n refers to sample draw
         params_nk = RNG.normal(loc=sm_reg.params, scale=sm_reg.bse, size=(sample_n, degree+1))
         # Sample drift using the parameter samples
         drift_nt = (params_nk[:, np.newaxis, :] * x_tk[np.newaxis, :, :]).sum(axis=2)  # array
         drift_da = xr.DataArray(drift_nt, dims=['Draw', 'Year'],
                                 coords={'Draw': range(sample_n), 'Year': pi_da.Year})  # DataArray
-    # If degree is "int.-bias", apply integrated-bias method
+    # If degree is 'int.-bias', apply integrated-bias method
     elif degree == 'int.-bias':
         # Call recursively to get bias samples of corresponding flux variable
-        bias_da = sample_drift(esm=esm, variable=f'{variable}p', degree=0, sample_n=SAMPLE_N, plot=False)
+        bias_da = sample_drift(esm=esm, variable=f'{variable}p', degree=0, sample_n=sample_n)
         # Cumulatively integrate bias samples
         convert_Wm2yr_YJ = get_cmip6_df(esm=esm, scenario='piControl')['convert_Wm2yr_YJ'][0]
         drift_da = bias_da.cumsum(dim='Year') * convert_Wm2yr_YJ
+    # If degree is 'agnostic', apply agnostic method using polynomials of degree 1-3
+    elif degree == 'agnostic':
+        # Create list to hold drift_da for each degree
+        drift_da_list = []
+        # Sample using different degrees (1-3), calling recursively
+        for deg in range(1, 4):
+            sub_n = sample_n // 3  # number of (sub)samples corresponding to this polynomial fit
+            if deg == 3:  # total number of samples should correspond to sample_n
+                sub_n = sample_n - 2 * sub_n
+            temp_da = sample_drift(esm=esm, variable=variable, degree=deg, sample_n=sub_n)
+            temp_da = temp_da.assign_coords({'Draw': (sub_n * (deg - 1) + np.arange(sub_n))})  # shift Draw coordinate
+            drift_da_list.append(temp_da)
+        # Concatenate the drift samples
+        drift_da = xr.concat(drift_da_list, dim='Draw')
     # If degree != 0, reference to 1995-2014 mean
     if degree != 0:
         drift_da -= drift_da.sel(Year=slice(1995, 2014)).mean(dim='Year')
