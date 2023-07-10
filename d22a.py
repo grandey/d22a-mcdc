@@ -426,7 +426,7 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE
         else:
             label = None
         ax.plot(drift_da.Year, drift_da.isel(Draw=i), color='purple', alpha=10./sample_n, label=label)
-    # Axis ticks
+    # x-axis ticks and range
     ax.set_xticks(np.arange(0, pi_da.Year[-1], 200))
     ax.minorticks_on()
     ax.set_xlim(pi_da.Year[0], pi_da.Year[-1])
@@ -451,42 +451,49 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE
     return ax
 
 
-def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenario='piControl', plot_uncorrected=False,
-                              sample_n=SAMPLE_N, title=None, legend=True, ax=None):
-    """Plot drift corrected time series for variable and scenario."""
+def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('piControl', 'historical', 'ssp245'),
+                              plot_uncorrected=False, sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+    """Plot drift-corrected time series for variable and scenario(s)."""
     # Create figure if ax=None
     if not ax:
         fig, ax = plt.subplots(1, 1, figsize=(4.5, 3))
-    # Also plot original uncorrected time series?
-    if plot_uncorrected:
-        # Get uncorrected time series for scenario and convert to DataArray
-        uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[variable].to_xarray()
+    # Loop over scenarios (in reverse)
+    for scenario in scenarios[::-1]:
+        # Also plot original uncorrected time series?
+        if plot_uncorrected:
+            # Get uncorrected time series for scenario and convert to DataArray
+            uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[variable].to_xarray()
+            # For SSPs, show from 2015
+            if 'ssp' in scenario:  # for SSPs
+                uncorr_da = uncorr_da.sel(Year=slice(2015, 2100))
+            # Plot time series
+            label = f'{SCENARIO_DICT[scenario]} (uncorrected)'
+            ax.plot(uncorr_da.Year, uncorr_da, label=label, color='k', linestyle='--', alpha=1.0, linewidth=1.0)
+        # Get drift corrected time series samples
+        corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                                   sample_n=sample_n, plot=False)
         # For SSPs, show from 2015
         if 'ssp' in scenario:  # for SSPs
-            uncorr_da = uncorr_da.sel(Year=slice(2015, 2100))
-        # Plot time series
-        label = f'{SCENARIO_DICT[scenario]} (uncorrected)'
-        ax.plot(uncorr_da.Year, uncorr_da, label=label, color='k', linestyle='--', alpha=1.0, linewidth=1.0)
-    # Get drift corrected time series samples
-    corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario,
-                               sample_n=sample_n, plot=False)
-    # For SSPs, show from 2015
-    if 'ssp' in scenario:  # for SSPs
-        corr_da = corr_da.sel(Year=slice(2015, 2100))
-    # Plot corrected samples
-    for i in range(sample_n):
-        if i == 0:
-            label = f'{SCENARIO_DICT[scenario]} ({degree} MCDC; n = {sample_n})'
-        else:
-            label = None
-        ax.plot(corr_da.Year, corr_da.isel(Draw=i), color=SCENARIO_C_DICT[scenario], alpha=10./sample_n, label=label)
-    # Axis ticks
-    if scenario == 'piControl':
-        ax.set_xticks(np.arange(corr_da.Year[0], corr_da.Year[-1], 200))
+            corr_da = corr_da.sel(Year=slice(2015, 2100))
+        # Plot corrected samples
+        for i in range(sample_n):
+            if i == 0:
+                label = f'{SCENARIO_DICT[scenario]} ({degree} MCDC; n = {sample_n})'
+            else:
+                label = None
+            ax.plot(corr_da.Year, corr_da.isel(Draw=i), color=SCENARIO_C_DICT[scenario], alpha=10./sample_n, label=label)
+    # x-axis ticks and range
+    if 'piControl' in scenarios:
+        ax.set_xticks(np.arange(0, 3000, 200))
     else:
-        ax.set_xticks(np.arange(corr_da.Year[0], corr_da.Year[-1], 50))
+        ax.set_xticks(np.arange(1850, 2100, 50))
     ax.minorticks_on()
-    ax.set_xlim(corr_da.Year[0], corr_da.Year[-1])
+    if bool({'ssp126', 'ssp245', 'ssp370', 'ssp585'} & set(scenarios)):
+        ax.set_xlim([1850, 2100])
+    elif 'historical' in scenarios:
+        ax.set_xlim([1850, 2014])
+    else:
+        ax.set_xlim([corr_da.Year[0], corr_da.Year[-1]])
     # Labels, legend etc
     ax.set_xlabel('Year')
     ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
