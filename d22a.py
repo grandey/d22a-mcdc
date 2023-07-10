@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pathlib
+from scipy import stats
 import statsmodels.api as sm
 from watermark import watermark
 import xarray as xr
@@ -48,6 +49,13 @@ UNITS_DICT = {'Ep': "W m$^{-2}$",
 
 REF_YRS = [1850, 1859]  # reference period; start year is used for origin when fitting drift
 REF_STR = '1850s'
+
+SCENARIO_DICT = {'piControl': 'Control', 'historical': 'Historical',  # names of scenarios
+                 'ssp126': 'SSP1-2.6', 'ssp245': 'SSP2-4.5',
+                 'ssp370': 'SSP3-7.0', 'ssp585': 'SSP5-8.5'}
+SCENARIO_C_DICT = {'piControl': '0.5', 'historical': 'darkblue',  # colours to use when plotting
+                   'ssp126': 'lavender', 'ssp245': 'greenyellow',
+                   'ssp370': 'darkorange', 'ssp585': 'darkred'}
 
 SAMPLE_N = 100  # number of drift samples to drawn
 
@@ -114,7 +122,7 @@ def get_cmip6_df(esm=True, scenario=True):
         esm = tuple(sorted([d.name for d in IN_BASE.glob(f'regrid_missto0_yearmean_mergetime/zostoga/[!.]*_r*')]))
     # If scenario is True, update scenario to include control, historical, and Tier 1 SSPs
     if scenario is True:
-        scenario = ('piControl', 'historical', 'ssp126', 'ssp245', 'ssp370', 'ssp585')
+        scenario = tuple(SCENARIO_DICT.keys())
     # If esm is tuple, call recursively
     if isinstance(esm, tuple):
         for esm1 in esm:
@@ -355,3 +363,43 @@ def sample_eta_eps(esm='UKESM1-0-LL_r1i1p1f2', eta_or_eps='eta', degree=1, scena
         plt.xlabel(f'{eta_or_eps} ({UNITS_DICT[eta_or_eps]})')
         plt.show()
     return coeff_da
+
+
+def plot_uncorrected_timeseries(esm='UKESM1-0-LL_r1i1p1f2', variable='Ep', scenarios=('piControl', 'historical'),
+                                title=None, legend=True, label_mean=True, ax=None):
+    """Plot uncorrected time series for variable and scenario(s)."""
+    # Create figure if ax is None
+    if not ax:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 3))
+    # Loop over scenarios (in reverse)
+    for scenario in scenarios[::-1]:
+        # Get uncorrected time series for scenario and convert to DataArray
+        uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[variable].to_xarray()
+        # For SSPs, show from 2015
+        if 'ssp' in scenario:  # for SSPs
+            uncorr_da = uncorr_da.sel(Year=slice(2015, 2100))
+        # If mean is to be included in label, calculate mean
+        if label_mean:
+            m = uncorr_da.mean()  # mean
+            sem = stats.sem(uncorr_da)  # standard error (not accounting for autocorrelation here)
+            label = f'{SCENARIO_DICT[scenario]} (uncorrected; {m:.3f} $\pm$ {sem:.3f} {UNITS_DICT[variable]})'
+        else:
+            label = f'{SCENARIO_DICT[scenario]} (uncorrected)'
+        # Plot time series
+        ax.plot(uncorr_da.Year, uncorr_da, label=label, color=SCENARIO_C_DICT[scenario], alpha=1.0, linewidth=1.0)
+    # Axis ticks
+    ax.set_xticks(np.arange(1850, 2101, 50))
+    ax.minorticks_on()
+    # Limit x-axis and time series to 1850-2100 or 1850-2014?
+    if bool({'ssp126', 'ssp245', 'ssp370', 'ssp585'} & set(scenarios)):
+        ax.set_xlim([1850, 2100])
+    else:
+        ax.set_xlim([1850, 2014])
+    # Labels, legend etc
+    ax.set_xlabel(r'Year')
+    ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    if title:
+        ax.set_title(title)
+    if legend:
+        ax.legend(fontsize='small')
+    return ax
