@@ -295,3 +295,23 @@ def sample_corrected(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenari
         plt.ylabel(f'{variable} ({UNITS_DICT[variable]})')
         plt.show()
     return corr_da
+
+
+@cache
+def sample_target_decade(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenario='historical',
+                         target_decade='2000s', sample_n=SAMPLE_N, plot=False):
+    """Return-decadal mean drift-corrected samples as DataArray."""
+    # Get time series samples
+    corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario, sample_n=sample_n)
+    # Calculate decadal mean, relative to reference period
+    target_start = int(target_decade[0:4])
+    target_end = target_start + 9
+    decadal_da = (corr_da.sel(Year=slice(target_start, target_end)).mean(dim='Year') -
+                  corr_da.sel(Year=slice(REF_YRS[0], REF_YRS[1])).mean(dim='Year'))
+    # Plot?
+    if plot:
+        decadal_da.plot.hist(label=f'{esm} {scenario} (n = {SAMPLE_N}; degree = {degree})')
+        plt.legend()
+        plt.xlabel(f'{variable} ({UNITS_DICT[variable]}; {target_decade})')
+        plt.show()
+    return decadal_da
