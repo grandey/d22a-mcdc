@@ -405,3 +405,46 @@ def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piContro
     if legend:
         ax.legend(fontsize='small')
     return ax
+
+
+def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+    """Plot uncorrected control time series with drift samples."""
+    # Create figure if ax=None
+    if not ax:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 3))
+    # Get uncorrected control time series
+    pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
+    # Plot piControl time series
+    ax.plot(pi_da.Year, pi_da, label='Control time series (uncorrected)', color='black', alpha=0.5, linewidth=0.7)
+    # Get drift samples
+    drift_da = sample_drift(esm=esm, variable=variable, degree=degree, sample_n=sample_n, plot=False)
+    # Plot drift samples
+    for i in range(sample_n):
+        if i == 0:
+            label = f'Drift samples ({degree} method; n = {sample_n})'
+        else:
+            label = None
+        ax.plot(drift_da.Year, drift_da.isel(Draw=i), color='purple', alpha=10./sample_n, label=label)
+    # Axis ticks
+    ax.set_xticks(np.arange(0, pi_da.Year[-1], 200))
+    ax.minorticks_on()
+    # Labels, legend etc
+    ax.set_xlabel('Year')
+    ax.set_xlim(pi_da.Year[0], pi_da.Year[-1])
+    ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    if title:
+        ax.set_title(title)
+    if legend:
+        leg = ax.legend(fontsize='small')
+        for lh in leg.legendHandles:
+            try:  # set min alpha in legend
+                if lh.get_alpha() < 0.5:
+                    lh.set_alpha(0.5)
+            except TypeError:
+                pass
+            try: # set min linewidth in legend
+                if lh.get_linewidth() < 0.5:
+                    lh.set_linewidth(0.5)
+            except TypeError:
+                pass
+    return ax
