@@ -216,6 +216,9 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
     """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
     # Get control time series and convert to DataArray
     pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
+    # If degree is 'linear', then integer equivalent is 1
+    if degree == 'linear':
+        degree = 1
     # If degree is an integer, then use a polynomial of that degree
     if isinstance(degree, int):
         # Predictors; t refers to year/time dimension, k to order of polynomial term
