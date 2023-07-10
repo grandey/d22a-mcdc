@@ -457,8 +457,8 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE
     return ax
 
 
-def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('piControl', 'historical', 'ssp245'),
-                              plot_uncorrected=False, sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('piControl', 'historical'),
+                              sample_n=SAMPLE_N, plot_uncorrected=False, title=None, legend=True, ax=None):
     """Plot drift-corrected time series for variable and scenario(s)."""
     # Create figure if ax=None
     if not ax:
@@ -510,3 +510,88 @@ def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('p
         leg = legend_min_alpha_linewidth(leg)
     return ax
 
+
+def scatter_line_rel(esm=DEF_ESM, x_var='E', y_var='H', scenarios=True,
+                     plot_uncorrected=False, degree=1, sample_n=SAMPLE_N, plot_largest_intercept=False,
+                     title=None, legend=True, ax=None):
+    """Scatter (uncorrected) and/or line (corrected) plot of y_var vs x_var."""
+    # If scenario is True, update scenario to include Tier 1 SSPs
+    if scenarios is True:
+        scenarios = ('ssp126', 'ssp245', 'ssp370', 'ssp585')
+        print(scenarios)
+    # Create figure if ax=None
+    if not ax:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.5))
+    # Show zero
+    ax.axvline(0, color='k', linewidth=0.5, alpha=0.3)
+    ax.axhline(0, color='k', linewidth=0.5, alpha=0.3)
+    # Loop over scenarios (in reverse)
+    for scenario in scenarios[::-1]:
+        # Plot uncorrected data?
+        if plot_uncorrected:
+            # Get uncorrected data
+            x_uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[x_var].to_xarray()
+            y_uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[y_var].to_xarray()
+            # For SSPs, show from 2015
+            if 'ssp' in scenario:
+                x_uncorr_da = x_uncorr_da.sel(Year=slice(2015, 2100))
+                y_uncorr_da = y_uncorr_da.sel(Year=slice(2015, 2100))
+            # Plot uncorrected data
+            ax.plot(x_uncorr_da, y_uncorr_da, label=f'{SCENARIO_DICT[scenario]} (uncorrected)',
+                    color=SCENARIO_C_DICT[scenario], linestyle='-', linewidth=0.2, marker='.', alpha=0.5)
+        # Plot drift-corrected samples?
+        if degree and sample_n:
+            # Get drift-corrected data for x_var
+            x_corr_da = sample_corrected(esm=esm, variable=x_var, degree=degree, scenario=scenario,
+                                         sample_n=sample_n, plot=False)
+            y_corr_da = sample_corrected(esm=esm, variable=y_var, degree=degree, scenario=scenario,
+                                         sample_n=sample_n, plot=False)
+            # For SSPs, show from 2015
+            if 'ssp' in scenario:
+                x_corr_da = x_corr_da.sel(Year=slice(2015, 2100))
+                y_corr_da = y_corr_da.sel(Year=slice(2015, 2100))
+            # Intialize max and min intercept encountered as zero
+            max_intercept = 0
+            min_intercept = 0
+            # Loop over drift-corrected samples
+            for i in range(sample_n):
+                # Label for plotting
+                if i == 0:  # label only once
+                    label = f'{SCENARIO_DICT[scenario]} ({degree} MCDC; n = {sample_n})'
+                else:
+                    label = None
+                # Plot drift-corrected data
+                ax.plot(x_corr_da.isel(Draw=i), y_corr_da.isel(Draw=i), label=label,
+                        color=SCENARIO_C_DICT[scenario], alpha=0.1, linewidth=0.05)
+                # Does this sample have the max or min intercept encountered so far?
+                sign_change_idxs = np.where(x_corr_da.isel(Draw=i).data[:-1] * x_corr_da.isel(Draw=i).data[1:] < 0)[0]
+                try:
+                    final_intercept = y_corr_da.isel(Draw=i).data[sign_change_idxs[-1]]
+                except IndexError:
+                    final_intercept = 0
+                if final_intercept > max_intercept:
+                    max_intercept = final_intercept
+                    max_intercept_i = i
+                elif final_intercept < min_intercept:
+                    min_intercept = final_intercept
+                    min_intercept_i = i
+            # Re-plot sample with max/min intercept?
+            if plot_largest_intercept:
+                ax.plot(x_corr_da.isel(Draw=max_intercept_i), y_corr_da.isel(Draw=max_intercept_i),
+                        label='Max intercept',
+                        color='magenta', alpha=0.5, linewidth=1, linestyle='--')
+                ax.plot(x_corr_da.isel(Draw=min_intercept_i), y_corr_da.isel(Draw=min_intercept_i),
+                        label='Min intercept',
+                        color='cyan', alpha=0.5, linewidth=1, linestyle='--')
+    # Axis ticks
+    ax.minorticks_on()
+    # x & y axis labels
+    ax.set_xlabel(f'{SYMBOLS_DICT[x_var]} ({UNITS_DICT[x_var]})')
+    ax.set_ylabel(f'{SYMBOLS_DICT[y_var]} ({UNITS_DICT[y_var]})')
+    # Legend, title etc
+    if title:
+        ax.set_title(title)
+    if legend:
+        leg = ax.legend(fontsize='small')
+        leg = legend_min_alpha_linewidth(leg)
+    return ax
