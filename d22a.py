@@ -57,6 +57,8 @@ SCENARIO_C_DICT = {'piControl': '0.5', 'historical': 'darkblue',  # colours to u
                    'ssp126': 'lavender', 'ssp245': 'greenyellow',
                    'ssp370': 'darkorange', 'ssp585': 'darkred'}
 
+DEF_ESM = 'UKESM1-0-LL_r1i1p1f2'  # default ESM
+
 SAMPLE_N = 100  # number of drift samples to drawn
 
 RNG = np.random.default_rng(12345)  # random number generator
@@ -69,7 +71,7 @@ def get_watermark():
 
 
 @cache
-def get_calendar_days_branch(esm='UKESM1-0-LL_r1i1p1f2'):
+def get_calendar_days_branch(esm=DEF_ESM):
     """Get calendar, number of days in year, and parent branch year for historical simulation of an ESM."""
     # Read historical Dataset
     in_fns = sorted(IN_BASE.glob(f'*/zostoga/{esm}/*_{esm}_historical.mergetime.nc'))
@@ -220,7 +222,7 @@ def get_cmip6_df(esm=True, scenario=True):
 
 
 @cache
-def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SAMPLE_N, plot=False):
+def sample_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE_N, plot=False):
     """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
     # Get control time series and convert to DataArray
     pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
@@ -280,7 +282,7 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
 
 
 @cache
-def sample_corrected(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenario='historical',
+def sample_corrected(esm=DEF_ESM, variable='E', degree=1, scenario='historical',
                      sample_n=SAMPLE_N, plot=False):
     """Apply MCDC to get drift corrected samples. Returns samples as DataArray."""
     # Get uncorrected time series for scenario and convert to DataArray
@@ -309,7 +311,7 @@ def sample_corrected(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenari
 
 
 @cache
-def sample_target_decade(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenario='historical',
+def sample_target_decade(esm=DEF_ESM, variable='E', degree=1, scenario='historical',
                          target_decade='2000s', sample_n=SAMPLE_N, plot=False):
     """Return decadal-mean drift-corrected samples as DataArray."""
     # Get time series samples
@@ -329,7 +331,7 @@ def sample_target_decade(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sce
 
 
 @cache
-def sample_eta_eps(esm='UKESM1-0-LL_r1i1p1f2', eta_or_eps='eta', degree=1, scenario='historical',
+def sample_eta_eps(esm=DEF_ESM, eta_or_eps='eta', degree=1, scenario='historical',
                    sample_n=SAMPLE_N, plot=False):
     """Using drift-corrected samples, return samples of eta or epsilon coefficients as a DataArray."""
     # Variables to use in calculation
@@ -365,7 +367,7 @@ def sample_eta_eps(esm='UKESM1-0-LL_r1i1p1f2', eta_or_eps='eta', degree=1, scena
     return coeff_da
 
 
-def plot_uncorrected_timeseries(esm='UKESM1-0-LL_r1i1p1f2', variable='Ep', scenarios=('piControl', 'historical'),
+def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piControl', 'historical'),
                                 title=None, legend=True, label_mean=True, ax=None):
     """Plot uncorrected time series for variable and scenario(s)."""
     # Create figure if ax is None
