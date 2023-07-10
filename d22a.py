@@ -37,7 +37,6 @@ SYMBOLS_DICT = {'Ep': "$E \prime$",  # TOA radiative flux
                 'eta': "$\eta$",  # fraction of excess energy absorbed by the ocean
                 'eps': "$\epsilon$",  # ocean expansion efficiency of heat
                 }
-
 UNITS_DICT = {'Ep': "W m$^{-2}$",
               'E': "YJ",
               'Hp': "W m$^{-2}$",
@@ -46,6 +45,9 @@ UNITS_DICT = {'Ep': "W m$^{-2}$",
               'eta': "unitless",
               'eps': "mm YJ$^{-1}$",
               }
+
+REF_YRS = [1850, 1859]  # reference period; start year is used for origin when fitting drift
+REF_STR = '1850s'
 
 SAMPLE_N = 100  # number of drift samples to drawn
 
@@ -103,10 +105,6 @@ def get_cmip6_df(esm=True, scenario=True):
     -------
     cmip6_df : DataFrame
         A DataFrame containing Ep, E, Hp, H, and Z.
-
-    Notes
-    -----
-    - E, H, and Z are referenced to the 1995-2014 mean.
     """
     # Create DataFrame to hold data
     col_list = ['ESM', 'Scenario', 'Year', 'Ep', 'E', 'Hp', 'H', 'Z', 'convert_Wm2yr_YJ']
@@ -197,9 +195,9 @@ def get_cmip6_df(esm=True, scenario=True):
         E = Ep.cumsum().rename('E') * convert_Wm2yr_YJ  # W m-2 yr -> JY
         H = Hp.cumsum().rename('H') * convert_Wm2yr_YJ
         Z = in_ds['zostoga'].rename('Z') * 1e3  # m -> mm
-        # Reference non-flux data 1995-2014 mean
+        # Reference non-flux data reference period
         for da in [E, H, Z]:
-            da -= da.sel(time=slice(1995, 2014)).mean()
+            da -= da.sel(time=slice(REF_YRS[0], REF_YRS[1])).mean()
         # Save to DataFrame
         cmip6_df['Year'] = Ep.time
         cmip6_df['Ep'] = Ep.data
@@ -221,7 +219,7 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
     # If degree is an integer, then use a polynomial of that degree
     if isinstance(degree, int):
         # Predictors; t refers to year/time dimension, k to order of polynomial term
-        x_tk = np.stack([(pi_da.Year - 2005)**k for k in range(degree+1)]).transpose()  # use 2005 as base year
+        x_tk = np.stack([(pi_da.Year - REF_YRS[0])**k for k in range(degree+1)]).transpose()  # ref to REF_YRS[0]
         # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
         sm_reg = sm.OLS(pi_da.data, x_tk).fit().get_robustcov_results(cov_type='HAC', maxlags=100)
         # Sample parameters and standard error, assuming Gaussian distribution; n refers to sample draw
@@ -251,9 +249,9 @@ def sample_drift(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sample_n=SA
             drift_da_list.append(temp_da)
         # Concatenate the drift samples
         drift_da = xr.concat(drift_da_list, dim='Draw')
-    # If degree != 0, reference to 1995-2014 mean
+    # If degree != 0, reference to reference period
     if degree != 0:
-        drift_da -= drift_da.sel(Year=slice(1995, 2014)).mean(dim='Year')
+        drift_da -= drift_da.sel(Year=slice(REF_YRS[0], REF_YRS[1])).mean(dim='Year')
     # Plot?
     if plot:
         pi_da.plot(color='0.2', label=f'{esm} control')
@@ -280,9 +278,9 @@ def sample_corrected(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenari
     drift_da = sample_drift(esm=esm, variable=variable, degree=degree, sample_n=sample_n, plot=False)
     # Apply drift correction
     corr_da = uncorr_da - drift_da
-    # If degree != 0, reference to 1995-2014 mean
+    # If degree != 0, reference to reference period
     if degree != 0:
-        corr_da -= corr_da.sel(Year=slice(1995, 2014)).mean(dim='Year')
+        corr_da -= corr_da.sel(Year=slice(REF_YRS[0], REF_YRS[1])).mean(dim='Year')
     # Plot?
     if plot:
         uncorr_da.plot(color='0.2', label=f'{esm} {scenario}')
