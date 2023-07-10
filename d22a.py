@@ -66,7 +66,7 @@ RNG = np.random.default_rng(12345)  # random number generator
 
 def get_watermark():
     """Return watermark string, including versions of dependencies."""
-    packages = 'matplotlib,numpy,pandas,scipy,seaborn,statsmodels,xarray'
+    packages = 'matplotlib,numpy,pandas,scipy,statsmodels,xarray'
     return watermark(machine=True, conda=True, python=True, packages=packages)
 
 
@@ -408,6 +408,22 @@ def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piContro
     return ax
 
 
+def legend_min_alpha_linewidth(leg):
+    """Set min alpha and min linewidth in legend."""
+    for lh in leg.legendHandles:
+        try:  # set min alpha in legend
+            if lh.get_alpha() < 0.5:
+                lh.set_alpha(0.5)
+        except TypeError:
+            pass
+        try: # set min linewidth in legend
+            if lh.get_linewidth() < 0.5:
+                lh.set_linewidth(0.5)
+        except TypeError:
+            pass
+    return leg
+
+
 def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE_N, title=None, legend=True, ax=None):
     """Plot uncorrected control time series with drift samples."""
     # Create figure if ax=None
@@ -437,17 +453,7 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE
         ax.set_title(title)
     if legend:
         leg = ax.legend(fontsize='small')
-        for lh in leg.legendHandles:
-            try:  # set min alpha in legend
-                if lh.get_alpha() < 0.5:
-                    lh.set_alpha(0.5)
-            except TypeError:
-                pass
-            try: # set min linewidth in legend
-                if lh.get_linewidth() < 0.5:
-                    lh.set_linewidth(0.5)
-            except TypeError:
-                pass
+        leg = legend_min_alpha_linewidth(leg)
     return ax
 
 
@@ -501,15 +507,6 @@ def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('p
         ax.set_title(title)
     if legend:
         leg = ax.legend(fontsize='small')
-        for lh in leg.legendHandles:
-            try:  # set min alpha in legend
-                if lh.get_alpha() < 0.5:
-                    lh.set_alpha(0.5)
-            except TypeError:
-                pass
-            try: # set min linewidth in legend
-                if lh.get_linewidth() < 0.5:
-                    lh.set_linewidth(0.5)
-            except TypeError:
-                pass
+        leg = legend_min_alpha_linewidth(leg)
     return ax
+
