@@ -315,7 +315,8 @@ def sample_target_decade(esm=DEF_ESM, variable='E', degree=1, scenario='historic
                          target_decade='2000s', sample_n=SAMPLE_N, plot=False):
     """Return decadal-mean drift-corrected samples as DataArray."""
     # Get time series samples
-    corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario, sample_n=sample_n)
+    corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                               sample_n=sample_n, plot=False)
     # Calculate decadal mean, relative to reference period
     target_start = int(target_decade[0:4])
     target_end = target_start + 9
@@ -428,9 +429,66 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE
     # Axis ticks
     ax.set_xticks(np.arange(0, pi_da.Year[-1], 200))
     ax.minorticks_on()
+    ax.set_xlim(pi_da.Year[0], pi_da.Year[-1])
     # Labels, legend etc
     ax.set_xlabel('Year')
-    ax.set_xlim(pi_da.Year[0], pi_da.Year[-1])
+    ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    if title:
+        ax.set_title(title)
+    if legend:
+        leg = ax.legend(fontsize='small')
+        for lh in leg.legendHandles:
+            try:  # set min alpha in legend
+                if lh.get_alpha() < 0.5:
+                    lh.set_alpha(0.5)
+            except TypeError:
+                pass
+            try: # set min linewidth in legend
+                if lh.get_linewidth() < 0.5:
+                    lh.set_linewidth(0.5)
+            except TypeError:
+                pass
+    return ax
+
+
+def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenario='piControl', plot_uncorrected=False,
+                              sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+    """Plot drift corrected time series for variable and scenario."""
+    # Create figure if ax=None
+    if not ax:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 3))
+    # Also plot original uncorrected time series?
+    if plot_uncorrected:
+        # Get uncorrected time series for scenario and convert to DataArray
+        uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[variable].to_xarray()
+        # For SSPs, show from 2015
+        if 'ssp' in scenario:  # for SSPs
+            uncorr_da = uncorr_da.sel(Year=slice(2015, 2100))
+        # Plot time series
+        label = f'{SCENARIO_DICT[scenario]} (uncorrected)'
+        ax.plot(uncorr_da.Year, uncorr_da, label=label, color='k', linestyle='--', alpha=1.0, linewidth=1.0)
+    # Get drift corrected time series samples
+    corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                               sample_n=sample_n, plot=False)
+    # For SSPs, show from 2015
+    if 'ssp' in scenario:  # for SSPs
+        corr_da = corr_da.sel(Year=slice(2015, 2100))
+    # Plot corrected samples
+    for i in range(sample_n):
+        if i == 0:
+            label = f'{SCENARIO_DICT[scenario]} ({degree} MCDC; n = {sample_n})'
+        else:
+            label = None
+        ax.plot(corr_da.Year, corr_da.isel(Draw=i), color=SCENARIO_C_DICT[scenario], alpha=10./sample_n, label=label)
+    # Axis ticks
+    if scenario == 'piControl':
+        ax.set_xticks(np.arange(corr_da.Year[0], corr_da.Year[-1], 200))
+    else:
+        ax.set_xticks(np.arange(corr_da.Year[0], corr_da.Year[-1], 50))
+    ax.minorticks_on()
+    ax.set_xlim(corr_da.Year[0], corr_da.Year[-1])
+    # Labels, legend etc
+    ax.set_xlabel('Year')
     ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
     if title:
         ax.set_title(title)
