@@ -300,7 +300,7 @@ def sample_corrected(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenari
 @cache
 def sample_target_decade(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, scenario='historical',
                          target_decade='2000s', sample_n=SAMPLE_N, plot=False):
-    """Return-decadal mean drift-corrected samples as DataArray."""
+    """Return decadal-mean drift-corrected samples as DataArray."""
     # Get time series samples
     corr_da = sample_corrected(esm=esm, variable=variable, degree=degree, scenario=scenario, sample_n=sample_n)
     # Calculate decadal mean, relative to reference period
@@ -315,3 +315,40 @@ def sample_target_decade(esm='UKESM1-0-LL_r1i1p1f2', variable='E', degree=1, sce
         plt.xlabel(f'{variable} ({UNITS_DICT[variable]}; {target_decade})')
         plt.show()
     return decadal_da
+
+
+@cache
+def sample_eta_eps(esm='UKESM1-0-LL_r1i1p1f2', eta_or_eps='eta', degree=1, scenario='historical',
+                   sample_n=SAMPLE_N, plot=False):
+    """Using drift-corrected samples, return samples of eta or epsilon coefficients as a DataArray."""
+    # Variables to use in calculation
+    if eta_or_eps == 'eta':  # eta: H = eta * E
+        x_var = 'E'
+        y_var = 'H'
+    elif eta_or_eps == 'eps':  # epsilon: Z = eps * H
+        x_var = 'H'
+        y_var = 'Z'
+    else:
+        raise ValueError(f'sample_eta_eps(): eta_or_eps of {eta_or_eps} not recognised.')
+    # Get drift-corrected time-series samples
+    x_da = sample_corrected(esm=esm, variable=x_var, degree=degree, scenario=scenario, sample_n=sample_n)
+    y_da = sample_corrected(esm=esm, variable=y_var, degree=degree, scenario=scenario, sample_n=sample_n)
+    # For SSPs, use data from 2015-2100 only
+    if 'ssp' in scenario:
+        x_da = x_da.sel(time=slice(2015, 2100))
+        y_da = y_da.sel(time=slice(2015, 2100))
+    # DataArray to hold coefficients (either eta or eps; initialized as zero)
+    coeff_da = x_da.mean(dim='Year')  # remove Year dimension
+    coeff_da.data[:] = 0.
+    # Loop over samples and estimate coefficients using OLS with a free intercept
+    for i in range(sample_n):
+        x_in = sm.add_constant(x_da.isel(Draw=i).data, prepend=True)
+        sm_reg = sm.OLS(y_da.isel(Draw=i).data, x_in).fit()
+        coeff_da.data[i] = sm_reg.params[1]
+    # Plot?
+    if plot:
+        coeff_da.plot.hist(label=f'{esm} {scenario} (n = {SAMPLE_N}; degree = {degree})')
+        plt.legend()
+        plt.xlabel(f'{eta_or_eps} ({UNITS_DICT[eta_or_eps]})')
+        plt.show()
+    return coeff_da
