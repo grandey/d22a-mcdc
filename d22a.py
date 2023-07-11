@@ -378,7 +378,7 @@ def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piContro
     for scenario in scenarios[::-1]:
         # Get uncorrected time series for scenario and convert to DataArray
         uncorr_da = get_cmip6_df(esm=esm, scenario=scenario).set_index('Year')[variable].to_xarray()
-        # For SSPs, show from 2015
+        # For SSPs, use data from 2015-2100
         if 'ssp' in scenario:  # for SSPs
             uncorr_da = uncorr_da.sel(Year=slice(2015, 2100))
         # If mean is to be included in label, calculate mean
@@ -388,6 +388,9 @@ def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piContro
             label = f'{SCENARIO_DICT[scenario]} (uncorrected; {m:.3f} $\pm$ {sem:.3f} {UNITS_DICT[variable]})'
         else:
             label = f'{SCENARIO_DICT[scenario]} (uncorrected)'
+        # Limit control data before plotting (so that y-axis range is appropriate)?
+        if scenario == 'piControl' and 'historical' in scenarios:
+            uncorr_da = uncorr_da.sel(Year=slice(1850, 2014))
         # Plot time series
         ax.plot(uncorr_da.Year, uncorr_da, label=label, color=SCENARIO_C_DICT[scenario], alpha=1.0, linewidth=1.0)
     # Axis ticks
