@@ -676,18 +676,18 @@ def composite_problem_of_drift(esm=DEF_ESM):
         else:
             label_mean = False
         plot_uncorrected_timeseries(esm=esm, variable=variable, scenarios=('piControl', 'historical'),
-                                    title=f'({chr(97+i)}) ${variable}$ time series',
+                                    title=f'({chr(97+i)}) {SYMBOLS_DICT[variable]} time series',
                                     legend=True, label_mean=label_mean, ax=ax)
     # 3rd column
     for i, x_var, y_var in zip(range(5, 7), ['E', 'H'], ['H', 'Z']):
         ax = axs[i]
         scatter_line_rel(esm=esm, x_var=x_var, y_var=y_var, scenarios=('historical',),
                          plot_uncorrected=True, degree=None, sample_n=None, plot_largest_intercept=False,
-                         title=f'({chr(97+i)}) ${y_var}$ vs ${x_var}$',
+                         title=f'({chr(97+i)}) {SYMBOLS_DICT[y_var]} vs {SYMBOLS_DICT[x_var]}',
                          legend=True, ax=ax)
     # Main title
-    fig.suptitle((f'Uncorrected time series and $E - H - Z$ relationships '
-                  f'for the {esm.split("_")[0]} control & historical simulations, '
+    fig.suptitle((f'Uncorrected time series and {"–".join([SYMBOLS_DICT[variable] for variable in ("E", "H", "Z")])} '
+                  f'relationships for the {esm.split("_")[0]} control & historical simulations, '
                   f'demonstrating the problem of drift\n'),
                  fontsize='x-large')
     return fig
