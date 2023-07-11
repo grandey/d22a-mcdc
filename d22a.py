@@ -653,6 +653,63 @@ def histogram_of_variable(esm=DEF_ESM, variable='Z', degree='agnostic', scenario
     return ax
 
 
+def boxplot_of_variable(esm=DEF_ESM, variable='E', degrees=True, scenarios=True,
+                        target_decade='2050s',  # target_decade not relevant if variable is eta or eps
+                        sample_n=SAMPLE_N, title=None, ax=None):
+    """Plot box (25-75) and whisker (2-98) plots of (i) E/H/Z for a target decade or (ii) eta/eps coefficient."""
+    # Create figure if ax=None
+    if not ax:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.5))
+    # If degrees is True, update degrees to include int.-bias (if relevant), linear, and agnostic method
+    if degrees is True:
+        if variable in ['E', 'H', 'eta']:
+            degrees = ('int.-bias', 'linear', 'agnostic')
+        else:
+            degrees = ('linear', 'agnostic')
+    # If scenarios is True, update scenarios to include historical and/or Tier 1 SSPs
+    if scenarios is True:
+        if variable in ['eta', 'eps']:
+            scenarios = ('historical', 'ssp126', 'ssp245', 'ssp370', 'ssp585')
+        elif int(target_decade[0:4]) <= 2000:
+            scenarios = ('historical',)
+        else:
+            scenarios = ('ssp126', 'ssp245', 'ssp370', 'ssp585')
+    # List to hold DataArrays, tick labels
+    data_da_list = []
+    tick_label_list = []
+    # Loop over methods (degree) and scenarios and get data
+    for i, degree in enumerate(degrees):
+        for scenario in scenarios:
+            if variable in ['eta', 'eps']:
+                data_da = sample_eta_eps(esm=esm, eta_or_eps=variable, degree=degree, scenario=scenario,
+                                         sample_n=sample_n, plot=False)
+            else:
+                data_da = sample_target_decade(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                                               target_decade=target_decade, sample_n=sample_n, plot=False)
+            data_da_list.append(data_da)
+            tick_label_list.append(SCENARIO_DICT[scenario])
+    # Plot data: median, 25-75, 2-98, and outliers
+    ax.boxplot(data_da_list, whis=[2, 98], sym='.', flierprops={'markersize': 1})
+    # Annotate segments of figure
+    for i, degree in enumerate(degrees):
+        xlim = ax.get_xlim()
+        seg_bnds = (np.array([i, i+1.]) / len(degrees)) * (xlim[1] - xlim[0]) + xlim[0]  # segment bounds
+        if i > 0:
+            ax.axvline(seg_bnds[0], color='0.8')
+        ax.text(seg_bnds.mean(), ax.get_ylim()[1], f'{degree.capitalize()}', ha='center', va='bottom',
+                fontsize='large')
+    # Configure axes etc
+    ylim = list(ax.get_ylim())
+    ylim[1] += 0.1 * (ylim[1] - ylim[0])  # stretch y-lim to accommodate annotation above
+    ax.set_ylim(ylim)
+    ax.tick_params(axis='both', left=True, top=False, right=True, bottom=True)
+    ax.set_xticklabels(tick_label_list, rotation=90)
+    ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    if title:
+        ax.set_title(title)
+    return ax
+
+
 def composite_problem_of_drift(esm=DEF_ESM):
     """Demonstrate problem of drift by showing uncorrected time series and relationships."""
     # Configure plot and subplots
