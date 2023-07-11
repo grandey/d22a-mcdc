@@ -222,7 +222,7 @@ def get_cmip6_df(esm=True, scenario=True):
 
 
 @cache
-def sample_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE_N, plot=False):
+def sample_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N, plot=False):
     """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
     # Get control time series and convert to DataArray
     pi_da = get_cmip6_df(esm=esm, scenario='piControl').set_index('Year')[variable].to_xarray()
@@ -282,7 +282,7 @@ def sample_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE_N, plot=Fa
 
 
 @cache
-def sample_corrected(esm=DEF_ESM, variable='E', degree=1, scenario='historical',
+def sample_corrected(esm=DEF_ESM, variable='E', degree='agnostic', scenario='historical',
                      sample_n=SAMPLE_N, plot=False):
     """Apply MCDC to get drift corrected samples. Returns samples as DataArray."""
     # Get uncorrected time series for scenario and convert to DataArray
@@ -311,7 +311,7 @@ def sample_corrected(esm=DEF_ESM, variable='E', degree=1, scenario='historical',
 
 
 @cache
-def sample_target_decade(esm=DEF_ESM, variable='E', degree=1, scenario='historical',
+def sample_target_decade(esm=DEF_ESM, variable='E', degree='agnostic', scenario='historical',
                          target_decade='2000s', sample_n=SAMPLE_N, plot=False):
     """Return decadal-mean drift-corrected samples as DataArray."""
     # Get time series samples
@@ -332,7 +332,7 @@ def sample_target_decade(esm=DEF_ESM, variable='E', degree=1, scenario='historic
 
 
 @cache
-def sample_eta_eps(esm=DEF_ESM, eta_or_eps='eta', degree=1, scenario='historical',
+def sample_eta_eps(esm=DEF_ESM, eta_or_eps='eta', degree='agnostic', scenario='historical',
                    sample_n=SAMPLE_N, plot=False):
     """Using drift-corrected samples, return samples of eta or epsilon coefficients as a DataArray."""
     # Variables to use in calculation
@@ -427,7 +427,7 @@ def legend_min_alpha_linewidth(leg):
     return leg
 
 
-def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+def plot_control_with_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N, title=None, legend=True, ax=None):
     """Plot uncorrected control time series with drift samples."""
     # Create figure if ax=None
     if not ax:
@@ -460,7 +460,7 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree=1, sample_n=SAMPLE
     return ax
 
 
-def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('piControl', 'historical'),
+def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree='agnostic', scenarios=('piControl', 'historical'),
                               sample_n=SAMPLE_N, plot_uncorrected=False, title=None, legend=True, ax=None):
     """Plot drift-corrected time series for variable and scenario(s)."""
     # Create figure if ax=None
@@ -515,7 +515,7 @@ def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree=1, scenarios=('p
 
 
 def scatter_line_rel(esm=DEF_ESM, x_var='E', y_var='H', scenarios=True,
-                     plot_uncorrected=False, degree=1, sample_n=SAMPLE_N, plot_largest_intercept=False,
+                     plot_uncorrected=False, degree='agnostic', sample_n=SAMPLE_N, plot_largest_intercept=False,
                      title=None, legend=True, ax=None):
     """Scatter (uncorrected) and/or line (corrected) plot of y_var vs x_var."""
     # If scenarios is True, update scenarios to include Tier 1 SSPs
@@ -599,7 +599,7 @@ def scatter_line_rel(esm=DEF_ESM, x_var='E', y_var='H', scenarios=True,
     return ax
 
 
-def histogram_of_variable(esm=DEF_ESM, variable='Z', degree=1, scenarios=True,
+def histogram_of_variable(esm=DEF_ESM, variable='Z', degree='agnostic', scenarios=True,
                           target_decade='2050s',  # target_decade not relevant if variable is eta or eps
                           sample_n=SAMPLE_N, title=None, legend=True, ax=None):
     """Plot histogram of (i) E/H/Z for a target decade or (ii) eta/eps coefficient."""
