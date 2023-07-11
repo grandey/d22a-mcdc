@@ -427,7 +427,8 @@ def legend_min_alpha_linewidth(leg):
     return leg
 
 
-def plot_control_with_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+def plot_control_with_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N, title=None, legend=True,
+                            ax=None):
     """Plot uncorrected control time series with drift samples."""
     # Create figure if ax=None
     if not ax:
@@ -690,4 +691,40 @@ def composite_problem_of_drift(esm=DEF_ESM):
                   f'relationships for the {esm.split("_")[0]} control & historical simulations, '
                   f'demonstrating the problem of drift\n'),
                  fontsize='x-large')
+    return fig
+
+
+def composite_compare_methods_timeseries(esm=DEF_ESM, variable='E', degrees=True, sample_n=SAMPLE_N):
+    """Compare int.-bias, linear, and agnostic methods (ie degrees) of MCDC by plotting time series."""
+    # If degrees is True, update degrees to include int.-bias (if integrated flux), linear, and agnostic
+    if degrees is True:
+        if variable in ['E', 'H']:
+            degrees = ('int.-bias', 'linear', 'agnostic')
+        else:
+            degrees = ('linear', 'agnostic')
+    # Configure plot and subplots
+    fig, axs = plt.subplots(len(degrees), 3, figsize=(18, 4*len(degrees)), constrained_layout=True)
+    fig.set_constrained_layout_pads(w_pad=0.2, h_pad=0.1, hspace=0, wspace=0)
+    # Loop over methods, which correspond to rows
+    for j, degree in enumerate(degrees):
+        # 1st column: drift samples
+        title = f'({chr(97+j*4)}) {degree.capitalize()}-method drift samples'
+        plot_control_with_drift(esm=esm, variable=variable, degree=degree,
+                                sample_n=sample_n, title=title, legend=True, ax=axs[j, 0])
+        # 2nd column: corrected control time series
+        title = f'({chr(97+j*4+1)}) {degree.capitalize()}-corrected control'
+        plot_corrected_timeseries(esm=esm, variable=variable, degree=degree, scenarios=('piControl',),
+                                  sample_n=sample_n, plot_uncorrected=True, title=title, legend=True, ax=axs[j, 1])
+        # 3rd column: corrected historical time series
+        title = f'({chr(97+j*4+2)}) {degree.capitalize()}-corrected historical'
+        plot_corrected_timeseries(esm=esm, variable=variable, degree=degree, scenarios=('historical',),
+                                  sample_n=sample_n, plot_uncorrected=True, title=title, legend=True, ax=axs[j, 2])
+    # Share y limits within column
+    for i in range(3):  # columns
+        for j in range(1, len(degrees)):  # rows (2nd onwards)
+            axs[j, i].sharey(axs[j, i])
+    # Main title
+    fig.suptitle((f'Different methods of MCDC applied to {SYMBOLS_DICT[variable]}, '
+                  f'using the {esm.split("_")[0]} control & historical simulations\n'),
+                  fontsize='xx-large')
     return fig
