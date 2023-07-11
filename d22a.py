@@ -349,8 +349,8 @@ def sample_eta_eps(esm=DEF_ESM, eta_or_eps='eta', degree=1, scenario='historical
     y_da = sample_corrected(esm=esm, variable=y_var, degree=degree, scenario=scenario, sample_n=sample_n)
     # For SSPs, use data from 2015-2100 only
     if 'ssp' in scenario:
-        x_da = x_da.sel(time=slice(2015, 2100))
-        y_da = y_da.sel(time=slice(2015, 2100))
+        x_da = x_da.sel(Year=slice(2015, 2100))
+        y_da = y_da.sel(Year=slice(2015, 2100))
     # DataArray to hold coefficients (either eta or eps; initialized as zero)
     coeff_da = x_da.mean(dim='Year')  # remove Year dimension
     coeff_da.data[:] = 0.
@@ -515,10 +515,9 @@ def scatter_line_rel(esm=DEF_ESM, x_var='E', y_var='H', scenarios=True,
                      plot_uncorrected=False, degree=1, sample_n=SAMPLE_N, plot_largest_intercept=False,
                      title=None, legend=True, ax=None):
     """Scatter (uncorrected) and/or line (corrected) plot of y_var vs x_var."""
-    # If scenario is True, update scenario to include Tier 1 SSPs
+    # If scenarios is True, update scenarios to include Tier 1 SSPs
     if scenarios is True:
         scenarios = ('ssp126', 'ssp245', 'ssp370', 'ssp585')
-        print(scenarios)
     # Create figure if ax=None
     if not ax:
         fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.5))
@@ -594,4 +593,57 @@ def scatter_line_rel(esm=DEF_ESM, x_var='E', y_var='H', scenarios=True,
     if legend:
         leg = ax.legend(fontsize='small')
         leg = legend_min_alpha_linewidth(leg)
+    return ax
+
+
+def histogram_of_variable(esm=DEF_ESM, variable='Z', degree=1, scenarios=True,
+                          target_decade='2050s',  # target_decade not relevant if variable is eta or eps
+                          sample_n=SAMPLE_N, title=None, legend=True, ax=None):
+    """Plot histogram of (i) E/H/Z for a target decade or (ii) eta/eps coefficient."""
+    # Create figure if ax=None
+    if not ax:
+        fig, ax = plt.subplots(1, 1, figsize=(4.5, 4.5))
+    # If scenarios is True, update scenarios to include historical and/or Tier 1 SSPs
+    if scenarios is True:
+        if variable in ['eta', 'eps']:
+            scenarios = ('historical', 'ssp126', 'ssp245', 'ssp370', 'ssp585')
+        elif int(target_decade[0:4]) <= 2000:
+            scenarios = ('historical',)
+        else:
+            scenarios = ('ssp126', 'ssp245', 'ssp370', 'ssp585')
+    # Loop over scenarios (in reverse)
+    for scenario in scenarios[::-1]:
+        # Get data for plotting
+        if variable in ['eta', 'eps']:
+            data_da = sample_eta_eps(esm=esm, eta_or_eps=variable, degree=degree, scenario=scenario,
+                                     sample_n=sample_n, plot=False)
+        else:
+            data_da = sample_target_decade(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                                           target_decade=target_decade, sample_n=sample_n, plot=False)
+        # Legend label (including mean and standard deviation) and bin width depend on variable
+        if variable == 'eta':
+            bin_width = 0.001
+            mean_std_str = f'{data_da.mean():0.3f} $\pm$ {data_da.std():0.3f}'
+        elif variable in ['E', 'H']:
+            bin_width = 0.01
+            mean_std_str = f'{data_da.mean():0.2f} $\pm$ {data_da.std():0.2f} ({UNITS_DICT[variable]})'
+        else:
+            bin_width = 0.1
+            mean_std_str = f'{data_da.mean():0.1f} $\pm$ {data_da.std():0.1f} ({UNITS_DICT[variable]})'
+        label = f'{SCENARIO_DICT[scenario]} ({mean_std_str})'
+        # Plot histogram
+        bins = np.arange(data_da.min()-bin_width/2, data_da.max()+bin_width, bin_width)
+        c = SCENARIO_C_DICT[scenario]
+        ax.hist(data_da, bins=bins, density=False, histtype='step', color=c, label=label)  # outer edges
+        ax.hist(data_da, bins=bins, density=False, color=c, alpha=0.1)  # inner shading (transparent)
+    # Axis ticks and labels
+    ax.minorticks_on()
+    ax.set_xlabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    ax.set_ylabel(f'Count')
+    # Title & legend
+    if title:
+        ax.set_title(title)
+    if legend:
+        ax.set_ylim([0, ax.get_ylim()[1]*1.6])  # extend ylim so more room for legend
+        ax.legend(fontsize='small', loc='upper left')
     return ax
