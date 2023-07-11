@@ -647,3 +647,44 @@ def histogram_of_variable(esm=DEF_ESM, variable='Z', degree=1, scenarios=True,
         ax.set_ylim([0, ax.get_ylim()[1]*1.6])  # extend ylim so more room for legend
         ax.legend(fontsize='small', loc='upper left')
     return ax
+
+
+def composite_problem_of_drift(esm=DEF_ESM):
+    """Demonstrate problem of drift by showing uncorrected time series and relationships."""
+    # Configure plot and subplots
+    fig = plt.figure(figsize=(15, 10.5), constrained_layout=True)
+    fig.set_constrained_layout_pads(w_pad=0.2, h_pad=0.03, hspace=0, wspace=0)
+    spec = fig.add_gridspec(6, 3)
+    axs = []  # list of axes
+    for r in range(2):  # 1st column (a, b)
+        ax = fig.add_subplot(spec[2*r:2*r+2, 0])
+        axs.append(ax)
+    for r in range(3):  # 2nd column (c, d, e)
+        ax = fig.add_subplot(spec[2*r:2*r+2, 1])
+        axs.append(ax)
+    for r in range(2):  # 3rd column (f, g)
+        ax = fig.add_subplot(spec[3*r:3*r+3, 2])
+        axs.append(ax)
+    # 1st & 2nd columns
+    for i, variable in enumerate(['Ep', 'Hp', 'E', 'H', 'Z']):
+        ax = axs[i]
+        if i < 2:
+            label_mean = True
+        else:
+            label_mean = False
+        plot_uncorrected_timeseries(esm=esm, variable=variable, scenarios=('piControl', 'historical'),
+                                    title=f'({chr(97+i)}) ${variable}$ time series',
+                                    legend=True, label_mean=label_mean, ax=ax)
+    # 3rd column
+    for i, x_var, y_var in zip(range(5, 7), ['E', 'H'], ['H', 'Z']):
+        ax = axs[i]
+        scatter_line_rel(esm=esm, x_var=x_var, y_var=y_var, scenarios=('historical',),
+                         plot_uncorrected=True, degree=None, sample_n=None, plot_largest_intercept=False,
+                         title=f'({chr(97+i)}) ${y_var}$ vs ${x_var}$',
+                         legend=True, ax=ax)
+    # Main title
+    fig.suptitle((f'Uncorrected time series and $E - H - Z$ relationships '
+                  f'for the {esm.split("_")[0]} control & historical simulations, '
+                  f'demonstrating the problem of drift\n'),
+                 fontsize='x-large')
+    return fig
