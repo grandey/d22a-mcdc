@@ -705,7 +705,10 @@ def boxplot_of_variable(esm=DEF_ESM, variable='E',
     ax.set_ylim(ylim)
     ax.tick_params(axis='both', left=True, top=False, right=True, bottom=True)
     ax.set_xticklabels(tick_label_list, rotation=90)
-    ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    if variable in ['eta', 'eps']:
+        ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})')
+    else:
+        ax.set_ylabel(f'{SYMBOLS_DICT[variable]} ({target_decade}; {UNITS_DICT[variable]})')
     if title:
         ax.set_title(title)
     return ax
