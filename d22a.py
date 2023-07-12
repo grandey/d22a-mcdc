@@ -7,6 +7,7 @@ Author:
 """
 
 from functools import cache
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -797,20 +798,56 @@ def composite_boxplots(esm=DEF_ESM, variables=('E', 'H', 'Z'), target_decade='20
     for i, variable in enumerate(variables):
         # Plot subplot
         title = f'({chr(97+i)}) {SYMBOLS_DICT[variable]} ({target_decade})'
-        ax = boxplot_of_variable(esm=esm, variable=variable, target_decade=target_decade,
-                                 degrees=degrees, scenarios=scenarios, sample_n=sample_n, title=title, ax=axs[i])
+        _ = boxplot_of_variable(esm=esm, variable=variable, target_decade=target_decade,
+                                degrees=degrees, scenarios=scenarios, sample_n=sample_n, title=title, ax=axs[i])
     # Main title depends on number of scenarios shown
-    scenarios_shown = set([s.get_text() for s in ax.get_xticklabels() for ax in axs])  # set of unique scenarios
+    scenarios_shown = set([s.get_text() for s in axs[0].get_xticklabels()])  # set of unique scenarios in 1st subplot
     if len(scenarios_shown) == 1:
         scen = scenarios_shown.pop()
         if scen == 'Historical':
             scen = 'historical'
-        suptitle = f'Drift-corrected results and drift uncertainty for the {esm.split("_")[0]} {scen} simulation'
+        suptitle = f'Drift-corrected results with drift uncertainty for the {esm.split("_")[0]} {scen} simulation'
         [ax.set_xticklabels([]) for ax in axs]  # also hide x-axis tick labels if only one scenario
     elif scenarios_shown == {'SSP1-2.6', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5'}:
-        suptitle = f'Drift-corrected results and drift uncertainty for the {esm.split("_")[0]} projection simulations'
+        suptitle = f'Drift-corrected results with drift uncertainty for the {esm.split("_")[0]} projection simulations'
     else:
-        suptitle = f'Drift-corrected results and drift uncertainty for {esm.split("_")[0]}'
+        suptitle = f'Drift-corrected results with drift uncertainty for the {esm.split("_")[0]} simulations'
     fig.suptitle(suptitle, fontsize='x-large')
     return fig
 
+
+def ensemble_boxplots(esms=True, variable='E', target_decade='2000s', degrees=True, scenarios=True, sample_n=SAMPLE_N):
+    """Fig showing boxplots of drift-corrected results for the CMIP6 ensemble."""
+    # If esms is True, use all available ESMs
+    if esms is True:
+        esms = get_cmip6_df(esm=True, scenario=True)['ESM'].unique()
+    # Configure subplots
+    ncols = 4
+    nrows = math.ceil(len(esms) / ncols)
+    fig, axs = plt.subplots(nrows, ncols, figsize=(4.5*ncols, 4.5*nrows), constrained_layout=True)
+    fig.set_constrained_layout_pads(w_pad=0.15, h_pad=0.15, hspace=0, wspace=0)
+    # Loop over ESMs
+    for i, esm in enumerate(esms):
+        # Plot subplot for this ESM
+        title = f'({chr(97+i)}) {esm.split("_")[0]}'
+        _ = boxplot_of_variable(esm=esm, variable=variable, target_decade=target_decade,
+                                degrees=degrees, scenarios=scenarios, sample_n=sample_n, title=title,
+                                ax=axs.flatten()[i])
+    # Main title depends on variable and number of scenarios shown
+    if variable in ['eta', 'eps']:
+        suptitle = f'Drift-corrected {SYMBOLS_DICT[variable]} with drift uncertainty'
+    else:
+        suptitle = f'Drift-corrected {SYMBOLS_DICT[variable]} ({target_decade}) with drift uncertainty'
+    scenarios_shown = set([s.get_text() for s in axs.flatten()[0].get_xticklabels()])  # unique scenarios in 1st subplot
+    if len(scenarios_shown) == 1:
+        scen = scenarios_shown.pop()
+        if scen == 'Historical':
+            scen = 'historical'
+        suptitle = f'{suptitle} for the CMIP6 {scen} simulations'
+        [ax.set_xticklabels([]) for ax in axs.flatten()]  # also hide x-axis tick labels if only one scenario
+    elif scenarios_shown == {'SSP1-2.6', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5'}:
+        suptitle = f'{suptitle} for the CMIP6 projection simulations'
+    else:
+        suptitle = f'{suptitle} for the CMIP6 simulations'
+    fig.suptitle(suptitle, fontsize='xx-large')
+    return fig
