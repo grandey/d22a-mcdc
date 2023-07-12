@@ -807,7 +807,10 @@ def composite_boxplots(esm=DEF_ESM, variables=('E', 'H', 'Z'), target_decade='20
             scen = 'historical'
         suptitle = f'Drift-corrected results and drift uncertainty for the {esm.split("_")[0]} {scen} simulation'
         [ax.set_xticklabels([]) for ax in axs]  # also hide x-axis tick labels if only one scenario
+    elif scenarios_shown == {'SSP1-2.6', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5'}:
+        suptitle = f'Drift-corrected results and drift uncertainty for the {esm.split("_")[0]} projection simulations'
     else:
         suptitle = f'Drift-corrected results and drift uncertainty for {esm.split("_")[0]}'
     fig.suptitle(suptitle, fontsize='x-large')
     return fig
+
