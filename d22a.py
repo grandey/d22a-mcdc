@@ -653,9 +653,9 @@ def histogram_of_variable(esm=DEF_ESM, variable='Z', degree='agnostic', scenario
     return ax
 
 
-def boxplot_of_variable(esm=DEF_ESM, variable='E', degrees=True, scenarios=True,
+def boxplot_of_variable(esm=DEF_ESM, variable='E',
                         target_decade='2050s',  # target_decade not relevant if variable is eta or eps
-                        sample_n=SAMPLE_N, title=None, ax=None):
+                        degrees=True, scenarios=True, sample_n=SAMPLE_N, title=None, ax=None):
     """Plot box (25-75) and whisker (2-98) plots of (i) E/H/Z for a target decade or (ii) eta/eps coefficient."""
     # Create figure if ax=None
     if not ax:
@@ -784,4 +784,30 @@ def composite_compare_methods_timeseries(esm=DEF_ESM, variable='E', degrees=True
     fig.suptitle((f'Different methods of MCDC applied to {SYMBOLS_DICT[variable]}, '
                   f'using the {esm.split("_")[0]} control & historical simulations\n'),
                   fontsize='xx-large')
+    return fig
+
+
+def composite_boxplots(esm=DEF_ESM, variables=('E', 'H', 'Z'), target_decade='2000s',
+                       degrees=True, scenarios=True, sample_n=SAMPLE_N):
+    """Fig showing boxplots of drift-corrected results for multiple variables from one ESM."""
+    # Configure plot and subplots
+    fig, axs = plt.subplots(1, len(variables), figsize=(5*len(variables), 5), constrained_layout=True)
+    fig.set_constrained_layout_pads(w_pad=0.2, h_pad=0.1, hspace=0, wspace=0)
+    # Loop over variables
+    for i, variable in enumerate(variables):
+        # Plot subplot
+        title = f'({chr(97+i)}) {SYMBOLS_DICT[variable]} ({target_decade})'
+        ax = boxplot_of_variable(esm=esm, variable=variable, target_decade=target_decade,
+                                 degrees=degrees, scenarios=scenarios, sample_n=sample_n, title=title, ax=axs[i])
+    # Main title depends on number of scenarios shown
+    scenarios_shown = set([s.get_text() for s in ax.get_xticklabels() for ax in axs])  # set of unique scenarios
+    if len(scenarios_shown) == 1:
+        scen = scenarios_shown.pop()
+        if scen == 'Historical':
+            scen = 'historical'
+        suptitle = f'Drift-corrected results and drift uncertainty for the {esm.split("_")[0]} {scen} simulation'
+        [ax.set_xticklabels([]) for ax in axs]  # also hide x-axis tick labels if only one scenario
+    else:
+        suptitle = f'Drift-corrected results and drift uncertainty for {esm.split("_")[0]}'
+    fig.suptitle(suptitle, fontsize='x-large')
     return fig
