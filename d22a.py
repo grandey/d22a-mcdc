@@ -370,8 +370,8 @@ def sample_eta_eps(esm=DEF_ESM, eta_or_eps='eta', degree='agnostic', scenario='h
 
 
 @cache
-def calc_drift_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', scenario='historical',
-                           target_decade='2000s', sample_n=SAMPLE_N):
+def calc_drift_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', scenario='ssp585',
+                           target_decade='2050s', sample_n=SAMPLE_N):
     """Calculate drift uncertainty using 2nd-98th percentiles of drift-corrected samples."""
     # Get data
     if variable in ['eta', 'eps']:
@@ -388,7 +388,7 @@ def calc_drift_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', scenari
 
 @cache
 def calc_scenario_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', target_decade='2050s', sample_n=SAMPLE_N):
-    """Calculate scenario uncertainty based on the inter-scenario range across SSPs."""
+    """Calculate scenario uncertainty using the inter-scenario range across SSPs."""
     # Calculate mean for each SSP
     mean_s = np.zeros(4)  # array to hold mean for each SSP
     for s, scenario in enumerate(['ssp126', 'ssp245', 'ssp370', 'ssp585']):
@@ -403,6 +403,28 @@ def calc_scenario_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', targ
         mean_s[s] = data_da.mean()
     # Calculate uncertainty using inter-scenario range
     uncertainty = mean_s.max() - mean_s.min()
+    return uncertainty
+
+
+@cache
+def calc_model_uncertainty(variable='E', degree='agnostic', scenario='ssp585', target_decade='2050s',
+                           sample_n=SAMPLE_N):
+    """Calculate model uncertainty using the inter-model range across ensemble."""
+    # Calculate mean for each ESM
+    esms = get_cmip6_df(esm=True, scenario=True)['ESM'].unique()  # list of ESMs
+    mean_e = np.zeros(len(esms))  # array to hold mean for each ESM
+    for e, esm in enumerate(esms):
+        # Get data
+        if variable in ['eta', 'eps']:
+            data_da = sample_eta_eps(esm=esm, eta_or_eps=variable, degree=degree, scenario=scenario,
+                                     sample_n=sample_n, plot=False)
+        else:
+            data_da = sample_target_decade(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                                           target_decade=target_decade, sample_n=sample_n, plot=False)
+        # Calculate mean
+        mean_e[e] = data_da.mean()
+    # Calculate uncertainty using inter-model range
+    uncertainty = mean_e.max() - mean_e.min()
     return uncertainty
 
 
