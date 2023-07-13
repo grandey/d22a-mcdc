@@ -854,3 +854,33 @@ def ensemble_boxplots(esms=True, variable='E', target_decade='2000s', degrees=Tr
         suptitle = f'{suptitle} for the CMIP6 simulations'
     fig.suptitle(suptitle, fontsize='xx-large')
     return fig
+
+
+def composite_rel_eta_eps_demo(esm=DEF_ESM, degree='agnostic', sample_n=SAMPLE_N):
+    """Fig showing E-H-Z relationships and eta & eps boxplots for one ESM."""
+    # Configure subplots
+    fig, axs = plt.subplots(2, 3, figsize=(14, 10), constrained_layout=True)
+    fig.set_constrained_layout_pads(w_pad=0.1, h_pad=0.2, hspace=0, wspace=0)
+    # Loop over rows
+    for j, eta_or_eps, x_var, y_var in [(0, 'eta', 'E', 'H'), (1, 'eps', 'H', 'Z')]:
+        # Cols 1 & 2: plot relationships for (i) historical and (ii) projections, for specified degree/method of MCDC
+        for i, scenarios in enumerate([('historical',), True]):
+            title = f'({chr(97+3*j+i)}) {SYMBOLS_DICT[y_var]}–{SYMBOLS_DICT[x_var]}'
+            if scenarios == ('historical',):
+                title = f'{title} (historical; {degree})'
+                plot_largest_intercept = True
+            else:
+                title = f'{title} (projections; {degree})'
+                plot_largest_intercept = False
+            _ = scatter_line_rel(esm=esm, x_var=x_var, y_var=y_var, scenarios=scenarios,
+                                 plot_uncorrected=False, degree=degree, sample_n=sample_n,
+                                 plot_largest_intercept=plot_largest_intercept, title=title, legend=True, ax=axs[j, i])
+        # Col 3: boxplots of eta & eps for all degrees/methods of MCDC
+        title = f'({chr(97+3*j+2)}) {SYMBOLS_DICT[eta_or_eps]} estimates'
+        _ = boxplot_of_variable(esm=esm, variable=eta_or_eps, target_decade=None, degrees=True,
+                                scenarios=scenarios, sample_n=sample_n, title=title, ax=axs[j, 2])
+    # Main title
+    suptitle = (f'Drift-corrected {"–".join([SYMBOLS_DICT[var] for var in ("E", "H", "Z")])} relationships '
+                f'and {" & ".join([SYMBOLS_DICT[var] for var in ("eta", "eps")])} estimates for {esm.split("_")[0]}')
+    fig.suptitle(suptitle, fontsize='xx-large')
+    return fig
