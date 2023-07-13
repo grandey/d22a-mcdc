@@ -380,9 +380,29 @@ def calc_drift_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', scenari
     else:
         data_da = sample_target_decade(esm=esm, variable=variable, degree=degree, scenario=scenario,
                                        target_decade=target_decade, sample_n=sample_n, plot=False)
-    # Calculate uncertainty
+    # Calculate uncertainty using 2nd-98th percentiles of samples
     perc_data = np.percentile(data_da, [2, 98])
     uncertainty = perc_data.max() - perc_data.min()
+    return uncertainty
+
+
+@cache
+def calc_scenario_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', target_decade='2050s', sample_n=SAMPLE_N):
+    """Calculate scenario uncertainty based on the inter-scenario range across SSPs."""
+    # Calculate mean for each SSP
+    mean_s = np.zeros(4)  # array to hold mean for each SSP
+    for s, scenario in enumerate(['ssp126', 'ssp245', 'ssp370', 'ssp585']):
+        # Get data
+        if variable in ['eta', 'eps']:
+            data_da = sample_eta_eps(esm=esm, eta_or_eps=variable, degree=degree, scenario=scenario,
+                                     sample_n=sample_n, plot=False)
+        else:
+            data_da = sample_target_decade(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                                           target_decade=target_decade, sample_n=sample_n, plot=False)
+        # Calculate mean
+        mean_s[s] = data_da.mean()
+    # Calculate uncertainty using inter-scenario range
+    uncertainty = mean_s.max() - mean_s.min()
     return uncertainty
 
 
