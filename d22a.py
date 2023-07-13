@@ -369,6 +369,23 @@ def sample_eta_eps(esm=DEF_ESM, eta_or_eps='eta', degree='agnostic', scenario='h
     return coeff_da
 
 
+@cache
+def calc_drift_uncertainty(esm=DEF_ESM, variable='E', degree='agnostic', scenario='historical',
+                           target_decade='2000s', sample_n=SAMPLE_N):
+    """Calculate drift uncertainty using 2nd-98th percentiles of drift-corrected samples."""
+    # Get data
+    if variable in ['eta', 'eps']:
+        data_da = sample_eta_eps(esm=esm, eta_or_eps=variable, degree=degree, scenario=scenario,
+                                 sample_n=sample_n, plot=False)
+    else:
+        data_da = sample_target_decade(esm=esm, variable=variable, degree=degree, scenario=scenario,
+                                       target_decade=target_decade, sample_n=sample_n, plot=False)
+    # Calculate uncertainty
+    perc_data = np.percentile(data_da, [2, 98])
+    uncertainty = perc_data.max() - perc_data.min()
+    return uncertainty
+
+
 def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piControl', 'historical'),
                                 title=None, legend=True, label_mean=True, ax=None):
     """Plot uncorrected time series for variable and scenario(s)."""
