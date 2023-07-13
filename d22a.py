@@ -489,7 +489,7 @@ def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree='agnostic', scen
         # Plot corrected samples
         for i in range(sample_n):
             if i == 0:
-                label = f'{SCENARIO_DICT[scenario]} ({degree} MCDC; n = {sample_n})'
+                label = f'{SCENARIO_DICT[scenario]} ({degree}; n={sample_n})'
             else:
                 label = None
             ax.plot(corr_da.Year, corr_da.isel(Draw=i), color=SCENARIO_C_DICT[scenario], alpha=10./sample_n, label=label)
@@ -561,7 +561,7 @@ def scatter_line_rel(esm=DEF_ESM, x_var='E', y_var='H', scenarios=True,
             for i in range(sample_n):
                 # Label for plotting
                 if i == 0:  # label only once
-                    label = f'{SCENARIO_DICT[scenario]} ({degree} MCDC; n = {sample_n})'
+                    label = f'{SCENARIO_DICT[scenario]} ({degree}; n={sample_n})'
                 else:
                     label = None
                 # Plot drift-corrected data
@@ -865,7 +865,7 @@ def composite_rel_eta_eps_demo(esm=DEF_ESM, degree='agnostic', sample_n=SAMPLE_N
     for j, eta_or_eps, x_var, y_var in [(0, 'eta', 'E', 'H'), (1, 'eps', 'H', 'Z')]:
         # Cols 1 & 2: plot relationships for (i) historical and (ii) projections, for specified degree/method of MCDC
         for i, scenarios in enumerate([('historical',), True]):
-            title = f'({chr(97+3*j+i)}) {SYMBOLS_DICT[y_var]}–{SYMBOLS_DICT[x_var]}'
+            title = f'({chr(97+3*j+i)}) {SYMBOLS_DICT[y_var]} vs {SYMBOLS_DICT[x_var]}'
             if scenarios == ('historical',):
                 title = f'{title} (historical; {degree})'
                 plot_largest_intercept = True
