@@ -945,7 +945,10 @@ def composite_boxplots(esm=DEF_ESM, variables=('E', 'H', 'Z'), target_decade='20
     # Loop over variables
     for i, variable in enumerate(variables):
         # Plot subplot
-        title = f'({chr(97+i)}) {SYMBOLS_DICT[variable]} ({target_decade})'
+        if variable in ['eta', 'eps']:
+            title = f'({chr(97+i)}) {SYMBOLS_DICT[variable]}'
+        else:
+            title = f'({chr(97+i)}) {SYMBOLS_DICT[variable]} ({target_decade})'
         _ = boxplot_of_variable(esm=esm, variable=variable, target_decade=target_decade,
                                 degrees=degrees, scenarios=scenarios, sample_n=sample_n, title=title, ax=axs[i])
     # Main title depends on number of scenarios shown
