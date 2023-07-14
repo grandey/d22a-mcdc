@@ -429,7 +429,7 @@ def calc_model_uncertainty(variable='E', degree='agnostic', scenario='ssp585', t
 
 
 @cache
-def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
+def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     """Detailed DataFrame showing drift, model, and scenario uncertainty."""
     # Lists of ESMs and scenarios
     esms = get_cmip6_df(esm=True, scenario=True)['ESM'].unique()
@@ -491,14 +491,14 @@ def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE
 
 
 @cache
-def uncertainty_df_summary(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s', sample_n=SAMPLE_N):
+def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s', sample_n=SAMPLE_N):
     """Summary DataFrame showing drift, model, and scenario uncertainty for multiple variables."""
     # Create empty summary DataFrame
     summary_df = pd.DataFrame()
     # Loop over variables
     for variable in variables:
         # Get detailed DataFrame
-        detailed_df = uncertainty_df_detailed(variable=variable, target_decade=target_decade, sample_n=sample_n)
+        detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
         # List and Series of formatted mean and range
         zipped_stats = zip(detailed_df.loc['Mean'], detailed_df.loc['Min'], detailed_df.loc['Max'])
         if variable in ['Z', 'eps']:
