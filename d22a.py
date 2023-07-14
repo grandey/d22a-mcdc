@@ -452,7 +452,7 @@ def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE
     index_list += ['Min', 'Mean', 'Max']
     index = pd.Index(index_list)
     # Initialize DataFrame
-    table_df = pd.DataFrame(columns=column_index, index=index)
+    detailed_df = pd.DataFrame(columns=column_index, index=index)
     # Loop over columns
     for column in column_index:
         # Drift uncertainty columns
@@ -465,35 +465,35 @@ def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE
                                                               scenario=scenario, target_decade=target_decade,
                                                               sample_n=sample_n)
                 uncertainty = uncertainty_s.mean()  # mean across scenarios
-                table_df.loc[esm.split('_')[0], column] = uncertainty_s.mean()  # save drift uncertainty
+                detailed_df.loc[esm.split('_')[0], column] = uncertainty_s.mean()  # save drift uncertainty
         # Scenario uncertainty column
         elif column[1] == 'Scenario':
             for esm in esms:   # loop over ESMs; use agnostic method for scenario uncertainty
                 uncertainty = calc_scenario_uncertainty(esm=esm, variable=variable, degree='agnostic',
                                                         target_decade=target_decade, sample_n=sample_n)
-                table_df.loc[esm.split('_')[0], column] = uncertainty  # save scenario uncertainty
+                detailed_df.loc[esm.split('_')[0], column] = uncertainty  # save scenario uncertainty
         # Model uncertainty column
         elif column[1] == 'Model':
             for scenario in scenarios:  # loop over scenarios; use agnostic method for model uncertainty
                 uncertainty = calc_model_uncertainty(variable=variable, degree='agnostic', scenario=scenario,
                                                      target_decade=target_decade, sample_n=sample_n)
-                table_df.loc[SCENARIO_DICT[scenario], column] = uncertainty  # save model uncertainty
+                detailed_df.loc[SCENARIO_DICT[scenario], column] = uncertainty  # save model uncertainty
     # Calculate min, mean, and max of each column
-    table_df.loc['Min'] = table_df.min(axis=0, skipna=True)
-    table_df.loc['Mean'] = table_df.mean(axis=0, skipna=True)
-    table_df.loc['Max'] = table_df.max(axis=0, skipna=True)
+    detailed_df.loc['Min'] = detailed_df.min(axis=0, skipna=True)
+    detailed_df.loc['Mean'] = detailed_df.mean(axis=0, skipna=True)
+    detailed_df.loc['Max'] = detailed_df.max(axis=0, skipna=True)
     # Round to specific number of decimal places
     if variable in ['Z', 'eps']:
-        table_df = table_df.astype('float64').round(1)
+        detailed_df = detailed_df.astype('float64').round(1)
     else:
-        table_df = table_df.astype('float64').round(3)
-    return table_df
+        detailed_df = detailed_df.astype('float64').round(3)
+    return detailed_df
 
 
 @cache
 def uncertainty_df_summary(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s', sample_n=SAMPLE_N):
     """Summary DataFrame showing drift, model, and scenario uncertainty for multiple variables."""
-    # Create empty summary DataFrame, using columns from detailed DataFrame
+    # Create empty summary DataFrame
     summary_df = pd.DataFrame()
     # Loop over variables
     for variable in variables:
@@ -506,13 +506,11 @@ def uncertainty_df_summary(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decad
         else:
             summary_list = [f'{a:.3f} ({b:.3f}–{c:.3f})' for a, b, c in zipped_stats]
         summary_ser = pd.Series(summary_list, index=detailed_df.columns)
-        # Save mean and range to new column of summary DataFrame (to be transposed later)
+        # Save mean and range to new column of summary DataFrame
         if variable in ['eta', 'eps']:
             summary_df[f'{SYMBOLS_DICT[variable]}'] = summary_ser
         else:
             summary_df[f'{SYMBOLS_DICT[variable]} ({target_decade})'] = summary_ser
-    # Transpose
-    summary_df = summary_df.transpose()
     return summary_df
 
 
