@@ -428,6 +428,7 @@ def calc_model_uncertainty(variable='E', degree='agnostic', scenario='ssp585', t
     return uncertainty
 
 
+@cache
 def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     """Detailed DataFrame showing drift, model, and scenario uncertainty."""
     # Lists of ESMs and scenarios
@@ -464,24 +465,55 @@ def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE
                                                               scenario=scenario, target_decade=target_decade,
                                                               sample_n=sample_n)
                 uncertainty = uncertainty_s.mean()  # mean across scenarios
-                table_df.loc[esm.split('_')[0], column] = float(uncertainty_s.mean())  # save drift uncertainty
+                table_df.loc[esm.split('_')[0], column] = uncertainty_s.mean()  # save drift uncertainty
         # Scenario uncertainty column
         elif column[1] == 'Scenario':
             for esm in esms:   # loop over ESMs; use agnostic method for scenario uncertainty
                 uncertainty = calc_scenario_uncertainty(esm=esm, variable=variable, degree='agnostic',
                                                         target_decade=target_decade, sample_n=sample_n)
-                table_df.loc[esm.split('_')[0], column] = float(uncertainty)  # save scenario uncertainty
+                table_df.loc[esm.split('_')[0], column] = uncertainty  # save scenario uncertainty
         # Model uncertainty column
         elif column[1] == 'Model':
             for scenario in scenarios:  # loop over scenarios; use agnostic method for model uncertainty
                 uncertainty = calc_model_uncertainty(variable=variable, degree='agnostic', scenario=scenario,
                                                      target_decade=target_decade, sample_n=sample_n)
-                table_df.loc[SCENARIO_DICT[scenario], column] = float(uncertainty)  # save model uncertainty
+                table_df.loc[SCENARIO_DICT[scenario], column] = uncertainty  # save model uncertainty
     # Calculate min, mean, and max of each column
     table_df.loc['Min'] = table_df.min(axis=0, skipna=True)
     table_df.loc['Mean'] = table_df.mean(axis=0, skipna=True)
     table_df.loc['Max'] = table_df.max(axis=0, skipna=True)
+    # Round to specific number of decimal places
+    if variable in ['Z', 'eps']:
+        table_df = table_df.astype('float64').round(1)
+    else:
+        table_df = table_df.astype('float64').round(3)
     return table_df
+
+
+@cache
+def uncertainty_df_summary(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s', sample_n=SAMPLE_N):
+    """Summary DataFrame showing drift, model, and scenario uncertainty for multiple variables."""
+    # Create empty summary DataFrame, using columns from detailed DataFrame
+    summary_df = pd.DataFrame()
+    # Loop over variables
+    for variable in variables:
+        # Get detailed DataFrame
+        detailed_df = uncertainty_df_detailed(variable=variable, target_decade=target_decade, sample_n=sample_n)
+        # List and Series of formatted mean and range
+        zipped_stats = zip(detailed_df.loc['Mean'], detailed_df.loc['Min'], detailed_df.loc['Max'])
+        if variable in ['Z', 'eps']:
+            summary_list = [f'{a:.1f} ({b:.1f}–{c:.1f})' for a, b, c in zipped_stats]
+        else:
+            summary_list = [f'{a:.3f} ({b:.3f}–{c:.3f})' for a, b, c in zipped_stats]
+        summary_ser = pd.Series(summary_list, index=detailed_df.columns)
+        # Save mean and range to new column of summary DataFrame (to be transposed later)
+        if variable in ['eta', 'eps']:
+            summary_df[f'{SYMBOLS_DICT[variable]}'] = summary_ser
+        else:
+            summary_df[f'{SYMBOLS_DICT[variable]} ({target_decade})'] = summary_ser
+    # Transpose
+    summary_df = summary_df.transpose()
+    return summary_df
 
 
 def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piControl', 'historical'),
