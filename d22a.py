@@ -428,6 +428,62 @@ def calc_model_uncertainty(variable='E', degree='agnostic', scenario='ssp585', t
     return uncertainty
 
 
+def uncertainty_df_detailed(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
+    """Detailed DataFrame showing drift, model, and scenario uncertainty."""
+    # Lists of ESMs and scenarios
+    esms = get_cmip6_df(esm=True, scenario=True)['ESM'].unique()
+    scenarios = ['ssp126', 'ssp245', 'ssp370', 'ssp585']
+    # MCDC methods to use depend on variable
+    if variable in ['E', 'H', 'eta']:
+        degrees = ('int.-bias', 'linear', 'agnostic')
+    else:
+        degrees = ('linear', 'agnostic')
+    # Column index
+    column_tuples = []
+    for degree in degrees:
+        column_tuples.append(('Drift uncertainty', degree.capitalize()))
+    column_tuples.append(('Other uncertainty', 'Model'))
+    column_tuples.append(('Other uncertainty', 'Scenario'))
+    column_index = pd.MultiIndex.from_tuples(column_tuples)
+    # Row index
+    index_list = [esm.split('_')[0] for esm in esms]
+    index_list += [SCENARIO_DICT[scenario] for scenario in scenarios]
+    index_list += ['Min', 'Mean', 'Max']
+    index = pd.Index(index_list)
+    # Initialize DataFrame
+    table_df = pd.DataFrame(columns=column_index, index=index)
+    # Loop over columns
+    for column in column_index:
+        # Drift uncertainty columns
+        if column[0] == 'Drift uncertainty':
+            degree = column[1].lower()
+            for esm in esms:   # loop over ESMs
+                uncertainty_s = np.zeros(len(scenarios))  # array to hold drift uncertainty for each scenario
+                for s, scenario in enumerate(scenarios):  # calc drift uncertainty for each scenario
+                    uncertainty_s[s] = calc_drift_uncertainty(esm=esm, variable=variable, degree=degree,
+                                                              scenario=scenario, target_decade=target_decade,
+                                                              sample_n=sample_n)
+                uncertainty = uncertainty_s.mean()  # mean across scenarios
+                table_df.loc[esm.split('_')[0], column] = float(uncertainty_s.mean())  # save drift uncertainty
+        # Scenario uncertainty column
+        elif column[1] == 'Scenario':
+            for esm in esms:   # loop over ESMs; use agnostic method for scenario uncertainty
+                uncertainty = calc_scenario_uncertainty(esm=esm, variable=variable, degree='agnostic',
+                                                        target_decade=target_decade, sample_n=sample_n)
+                table_df.loc[esm.split('_')[0], column] = float(uncertainty)  # save scenario uncertainty
+        # Model uncertainty column
+        elif column[1] == 'Model':
+            for scenario in scenarios:  # loop over scenarios; use agnostic method for model uncertainty
+                uncertainty = calc_model_uncertainty(variable=variable, degree='agnostic', scenario=scenario,
+                                                     target_decade=target_decade, sample_n=sample_n)
+                table_df.loc[SCENARIO_DICT[scenario], column] = float(uncertainty)  # save model uncertainty
+    # Calculate min, mean, and max of each column
+    table_df.loc['Min'] = table_df.min(axis=0, skipna=True)
+    table_df.loc['Mean'] = table_df.mean(axis=0, skipna=True)
+    table_df.loc['Max'] = table_df.max(axis=0, skipna=True)
+    return table_df
+
+
 def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piControl', 'historical'),
                                 title=None, legend=True, label_mean=True, ax=None):
     """Plot uncorrected time series for variable and scenario(s)."""
