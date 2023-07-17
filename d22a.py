@@ -61,7 +61,7 @@ SCENARIO_C_DICT = {'piControl': '0.5', 'historical': 'darkblue',  # colours to u
 
 DEF_ESM = 'UKESM1-0-LL_r1i1p1f2'  # default ESM
 
-SAMPLE_N = 100  # number of drift samples to drawn
+SAMPLE_N = 1500  # number of drift samples to draw
 
 RNG = np.random.default_rng(12345)  # random number generator
 
@@ -69,7 +69,7 @@ FIG_DIR = pathlib.Path.cwd() / 'figs_d22a'  # directory in which to save figures
 F_NUM = itertools.count(1)  # main figures counter
 S_NUM = itertools.count(1)  # supplementary figures counter
 O_NUM = itertools.count(1)  # other figures counter
-TABLE_DIR = pathlib.Path.cwd() / 'tables_d22a'  # director in which to save tables
+TABLE_DIR = pathlib.Path.cwd() / 'tables_d22a'  # directory in which to save tables
 T_NUM = itertools.count(1)  # main tables counter
 ST_NUM = itertools.count(1)  # supplementary tables counter
 OT_NUM = itertools.count(1)  # other tables counter
@@ -729,7 +729,7 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample
     # Plot drift samples
     for i in range(sample_n):
         if i == 0:
-            label = f'Drift samples ({degree} method; n = {sample_n})'
+            label = f'Drift samples ({degree} method; n={sample_n})'
         else:
             label = None
         ax.plot(drift_da.Year, drift_da.isel(Draw=i), color='purple', alpha=10./sample_n, label=label)
