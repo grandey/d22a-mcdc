@@ -223,6 +223,37 @@ def get_cmip6_df(esm=True, scenario=True):
 
 
 @cache
+def get_esm_info_df():
+    """DataFrame containing ESM, variant, control length, calendar, and further info URL."""
+    # Columns
+    columns = ['Model', 'Variant', 'Control length (yr)', 'Calendar', 'Further information URL']
+    # Initialize DataFrame
+    info_df = pd.DataFrame(columns=columns)
+    info_df = info_df.set_index('Model')
+    # Loop over ESMs
+    esms = get_cmip6_df(esm=True, scenario=True)['ESM'].unique()
+    for esm in esms:
+        # Model and variant
+        model, variant = esm.split('_')
+        # Length of available control data
+        control_len = len(get_cmip6_df(esm=esm, scenario='piControl')['Z'])
+        # Read control Dataset for Z - used for calendar and further info URL
+        in_fns = sorted(IN_BASE.glob(f'*/zostoga/{esm}/*_{esm}_piControl.mergetime.nc'))
+        if len(in_fns) != 1:
+            print(f'get_esm_info_df(): {len(in_fns)} files found for {esm} piControl zostoga; using {in_fns[0]}')
+        in_ds = xr.open_dataset(in_fns[0])
+        # Calendar
+        calendar = in_ds['time'].attrs['calendar']
+        # Further info URL
+        further_info_url = in_ds.attrs['further_info_url']
+        # Save to DataFrame
+        info_df.loc[model] = {'Variant': variant, 'Control length (yr)': control_len,
+                              'Calendar': calendar,
+                              'Further information URL': further_info_url}
+    return info_df
+
+
+@cache
 def sample_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N, plot=False):
     """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
     # Get control time series and convert to DataArray
