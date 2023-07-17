@@ -45,7 +45,7 @@ This includes the following steps:
 The NetCDF files produced by [`data_d22a.ipynb`](data_d22a.ipynb) can be found in [**`data/`**](data/).
 
 ### Analysis
-Analysis of the data in [`data/`](data/) is performed using [**`analysis_d22a.ipynb`**](manalysis_d22a.ipynb).
+Analysis of the data in [`data/`](data/) is performed using [**`analysis_d22a.ipynb`**](analysis_d22a.ipynb).
 
 [`analysis_d22a.ipynb`](analysis_d22a.ipynb) uses the functions contained in [`d22a.py`](d22a.py), and it writes both figures (in [**`figs_d22a/`**](figs_d22a/)) and tables (in [**`tables_d22a/`**](tables_d22a/)).
 
