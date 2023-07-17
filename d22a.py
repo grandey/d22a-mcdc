@@ -264,6 +264,25 @@ def get_esm_info_df():
     return info_df
 
 
+def get_esm_info_tex():
+    """Latex table containing ESM, variant, control length, calendar, and further info URL."""
+    # Get DataFrame
+    info_df = get_esm_info_df()
+    # Caption
+    caption = ("Coupled Model Intercomparison Project Phase 6 (CMIP6) models analysed in this study. "
+               "``Control length'' refers to the time series length of the pre-industrial control simulation data. "
+               "The further information URLs also correspond to the control simulations. ")
+    # Convert DataFrame to Latex
+    tex_str = info_df.style.to_latex(environment='table*', position='t', position_float='centering',
+                                     column_format='ccccc', multicol_align='c', hrules=True, clines='skip-last;data',
+                                     caption=caption)
+    # Manually reformat column titles
+    tex_str = tex_str.replace('\n & Variant & Control length (yr) & Calendar & Further information URL',
+                              '\nModel & Variant & Control length (yr) & Calendar & Further information URL')
+    tex_str = tex_str.replace('\nModel &  &  &  &  \\\\\n', '\n')
+    return tex_str
+
+
 @cache
 def sample_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N, plot=False):
     """Sample drift of a control simulation, using OLS with HAC. Returns samples as DataArray."""
