@@ -526,7 +526,7 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
                                                               scenario=scenario, target_decade=target_decade,
                                                               sample_n=sample_n)
                 uncertainty = uncertainty_s.mean()  # mean across scenarios
-                detailed_df.loc[esm.split('_')[0], column] = uncertainty_s.mean()  # save drift uncertainty
+                detailed_df.loc[esm.split('_')[0], column] = uncertainty  # save drift uncertainty
         # Scenario uncertainty column
         elif column[1] == 'Scenario':
             for esm in esms:   # loop over ESMs; use agnostic method for scenario uncertainty
@@ -549,6 +549,58 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     else:
         detailed_df = detailed_df.astype('float64').round(3)
     return detailed_df
+
+
+def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
+    """Detailed Latex table Detailed DataFrame showing drift, model, and scenario uncertainty."""
+    # Get DataFrame
+    detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
+    # Caption
+    if variable in ['eta', 'eps']:
+        variable_str = SYMBOLS_DICT[variable]
+    else:
+        variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade}, relative to {REF_STR})'
+    caption = (f'Sources of uncertainty in {variable_str}. '
+               'For each drift-correction method and model, '
+               '\emph{drift uncertainty} is derived from the 2nd--98th inter-percentile range: '
+               '(i) for each projection scenario, '
+               'calculate the 2nd--98th inter-percentile range of the drift-corrected data, '
+               'then (ii) calculate the mean of this inter-percentile range by averaging across the scenarios. '
+               'For each projection scenario, \emph{model uncertainty} is derived from the inter-model range: '
+               '(i) for each model, calculate the mean of the agnostic-method drift-corrected data, '
+               'then (ii) calculate the inter-model range. '
+               'For each model, \emph{scenario uncertainty} is derived from the inter-scenario range: '
+               '(i) for each projection scenario, calculate the mean of the agnostic-method drift-corrected data, '
+               'then (ii) calculate the inter-scenario range. '
+               'The final three rows contain summary statistics: the minimum, mean, and maximum of each column.')
+    # Column format, number of columns, and decimal places formatter
+    if variable in ['Z', 'eps']:
+        column_format='c|rr|rr'
+        n_cols = 5
+        formatter = '{:.1f}'
+    else:
+        column_format='c|rrr|rr'
+        n_cols = 6
+        formatter = '{:.3f}'
+    # Convert DataFrame to Latex
+    tex_str = detailed_df.style.format(formatter=formatter, na_rep='').to_latex(
+            environment='table*', position='t', position_float='centering',
+            column_format=column_format, multicol_align='c|', hrules=True, clines='skip-last;data',
+            caption=caption)
+    # Manually reformat column titles etc
+    if variable in ['eta', 'eps']:
+        title_str = f'Sources of uncertainty in {SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})'
+    else:
+        title_str = f'Sources of uncertainty in {SYMBOLS_DICT[variable]} ({target_decade}; {UNITS_DICT[variable]})'
+    tex_str = tex_str.replace('toprule\n',  # add title row, containing units
+                              'toprule\n\multicolumn{%d}{c}{%s} \\\\ \n\midrule\n' % (n_cols, title_str))
+    tex_str = tex_str.replace('\n & \multicolumn',  # add column title for first column
+                              '\nModel or scenario & \multicolumn')
+    tex_str = tex_str.replace('\multicolumn{2}{c|}{Other uncertainty}',  # remove line after "Other uncertainty"
+                              '\multicolumn{2}{c}{Other uncertainty}')
+    tex_str = tex_str.replace('\nMin',  # insert line before summary statistics
+                              '\n\midrule\nMin')
+    return tex_str
 
 
 @cache
