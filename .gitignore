@@ -2,6 +2,7 @@
 temp_*
 temp.*
 temp/
+removed/
 .idea
 .DS_Store
 *.pdf
