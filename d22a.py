@@ -7,6 +7,7 @@ Author:
 """
 
 from functools import cache
+import itertools
 import math
 import matplotlib.pyplot as plt
 import numpy as np
@@ -63,6 +64,14 @@ DEF_ESM = 'UKESM1-0-LL_r1i1p1f2'  # default ESM
 SAMPLE_N = 100  # number of drift samples to drawn
 
 RNG = np.random.default_rng(12345)  # random number generator
+
+FIG_DIR = pathlib.Path.cwd() / 'figs_d22a'  # directory in which to save figures
+F_NUM = itertools.count(1)  # main figures counter
+S_NUM = itertools.count(1)  # supplementary figures counter
+O_NUM = itertools.count(1)  # other figures counter
+TABLE_DIR = pathlib.Path.cwd() / 'tables_d22a'  # director in which to save tables
+T_NUM = itertools.count(1)  # main tables counter
+ST_NUM = itertools.count(1)  # supplementary tables counter
 
 
 def get_watermark():
@@ -1063,3 +1072,36 @@ def composite_rel_eta_eps_demo(esm=DEF_ESM, degree='agnostic', sample_n=SAMPLE_N
                 f'and {" & ".join([SYMBOLS_DICT[var] for var in ("eta", "eps")])} estimates for {esm.split("_")[0]}')
     fig.suptitle(suptitle, fontsize='xx-large')
     return fig
+
+
+def name_save_fig(fig,
+                  fso='f',  # figure type, either 'f' (main), 's' (supp), or 'o' (other)
+                  exts=('pdf', 'png'),  # extension(s) to use
+                  close=False):
+    """Name & save a figure, and increase counter."""
+    # Name based on counter, then update counter (in preparation for next figure)
+    if fso == 'f':
+        fig_name = f'fig{next(F_NUM):02}'
+    elif fso == 's':
+        fig_name = f's{next(S_NUM):02}'
+    else:
+        fig_name = f'o{next(O_NUM):02}'
+    # File location based on extension(s)
+    for ext in exts:
+        # Get constrained layout pads (to preserve values after saving fig)
+        w_pad, h_pad, _, _ = fig.get_constrained_layout_pads()
+        # Sub-directory
+        sub_dir = FIG_DIR.joinpath(f'{fso}_{ext}')
+        sub_dir.mkdir(exist_ok=True)
+        # Save
+        fig_path = sub_dir.joinpath(f'{fig_name}.{ext}')
+        fig.savefig(fig_path)
+        # Print file name and size
+        fig_size = fig_path.stat().st_size / 1024 / 1024  # bytes -> MB
+        print(f'Written {fig_name}.{ext} ({fig_size:.2f} MB)')
+        # Reset constrained layout pads to previous values
+        fig.set_constrained_layout_pads(w_pad=w_pad, h_pad=h_pad)
+        # Suppress output in notebook?
+    if close:
+        plt.close()
+    return fig_name
