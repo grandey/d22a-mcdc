@@ -274,7 +274,7 @@ def get_esm_info_tex():
                "The further information URLs also correspond to the control simulations. ")
     # Convert DataFrame to Latex
     tex_str = info_df.style.to_latex(environment='table*', position='t', position_float='centering',
-                                     column_format='ccccc', multicol_align='c', hrules=True, clines='skip-last;data',
+                                     column_format='ccccc', multicol_align='c', hrules=True,
                                      caption=caption)
     # Manually reformat column titles
     tex_str = tex_str.replace('\n & Variant & Control length (yr) & Calendar & Further information URL',
@@ -552,7 +552,7 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
 
 
 def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
-    """Detailed Latex table Detailed DataFrame showing drift, model, and scenario uncertainty."""
+    """Detailed Latex table showing drift, model, and scenario uncertainty."""
     # Get DataFrame
     detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
     # Caption
@@ -585,8 +585,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     # Convert DataFrame to Latex
     tex_str = detailed_df.style.format(formatter=formatter, na_rep='').to_latex(
             environment='table*', position='t', position_float='centering',
-            column_format=column_format, multicol_align='c|', hrules=True, clines='skip-last;data',
-            caption=caption)
+            column_format=column_format, multicol_align='c|', hrules=True, caption=caption)
     # Manually reformat column titles etc
     if variable in ['eta', 'eps']:
         title_str = f'Sources of uncertainty in {SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})'
@@ -621,10 +620,39 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
         summary_ser = pd.Series(summary_list, index=detailed_df.columns)
         # Save mean and range to new column of summary DataFrame
         if variable in ['eta', 'eps']:
-            summary_df[f'{SYMBOLS_DICT[variable]}'] = summary_ser
+            summary_df[f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})'] = summary_ser
         else:
-            summary_df[f'{SYMBOLS_DICT[variable]} ({target_decade})'] = summary_ser
+            summary_df[f'{SYMBOLS_DICT[variable]} ({target_decade}; {UNITS_DICT[variable]})'] = summary_ser
     return summary_df
+
+
+def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s', sample_n=SAMPLE_N):
+    """Summary Latex table Detailed DataFrame showing drift, model, and scenario uncertainty."""
+    # Get DataFrame
+    summary_df = get_summary_df(variables=variables, target_decade=target_decade, sample_n=sample_n)
+    # Caption
+    caption = (f'CMIP6 ensemble mean and range (minimum–maximum) for different sources of uncertainty. '
+               'For each drift-correction method, \emph{drift uncertainty} is derived from '
+               'the 2nd--98th inter-percentile range of the drift-corrected data. '
+               '\emph{Model uncertainty} is derived from the inter-model range. '
+               '\emph{Scenario uncertainty} is derived from the inter-scenario range. '
+               'The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. '
+               'For further details, see Tables~S2--S6.')
+    # # Decimal places formatter
+    # formatter_dict = {}
+    # for col in summary_df.columns:
+    #     if 'mm' in col:  # Z and eps are the variables with mm in their units
+    #         formatter_dict[col] = '{:.1f}'
+    #     else:
+    #         formatter_dict[col] = '{:.3f}'
+    # Convert DataFrame to Latex
+    tex_str = summary_df.style.format(na_rep='').to_latex(
+            environment='table*', position='t', position_float='centering',
+            column_format=('cc'+'|c'*len(variables)), hrules=True, multirow_align='c', caption=caption)
+    # Manually insert horizontal line between "Drift uncertainty" and "Other uncertainty"
+    tex_str = tex_str.replace('\multirow[c]{2}{*}{Other uncertainty}',
+                              '\midrule\n\multirow[c]{2}{*}{Other uncertainty}')
+    return tex_str
 
 
 def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piControl', 'historical'),
