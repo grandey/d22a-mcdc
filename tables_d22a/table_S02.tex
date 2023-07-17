@@ -1,51 +1,37 @@
 \begin{table*}[t]
 \centering
-\caption{Sources of uncertainty in $\beta$ (fraction of excess energy absorbed by the ocean), $\epsilon$ (expansion efficiency of heat), and ${\Delta}Z$ (thermosteric sea-level rise, relative to 1995--2014). For each model, \emph{drift uncertainty} is derived from the 2nd--98th inter-percentile range: (i) for each scenario, calculate the 2nd--98th inter-percentile range of the drift-corrected data, then (ii) calculate the mean of this inter-percentile range by averaging across the scenarios. For each model, \emph{scenario uncertainty} is derived from the inter-scenario range: (i) for each scenario, calculate the mean of the drift-corrected data, then (ii) calculate the inter-scenario range. For each scenario, \emph{model uncertainty} is derived from the inter-model range: (i) for each model, calculate the mean of the drift-corrected data, then (ii) calculate the inter-model range. For $\beta$ and $\epsilon$, drift uncertainty is calculated using both trend-method MCDC and integrated-bias-method MCDC. Scenario uncertainty and model uncertainty are relatively insensitive to the choice of drift correction method, so these sources of uncertainty are shown for trend-method MCDC only. When calculating the uncertainty in $\beta$, $\epsilon$, and ${\Delta}Z$ for future decades, the four projection scenarios are used (but not the historical scenario). When calculating the uncertainty in ${\Delta}Z$ for the 1850s, the single historical scenario is used instead, hence scenario uncertainty cannot be calculated for the 1850s. The values in Table 1 of the main manuscript have been calculated by averaging across all models or scenarios for each source of uncertainty.}
-\begin{tabular}{c|c|rr|rr|rrr}
+\caption{Sources of uncertainty in $\Delta E$ (2050s, relative to 1850s). For each drift-correction method and model, \emph{drift uncertainty} is derived from the 2nd--98th inter-percentile range: (i) for each projection scenario, calculate the 2nd--98th inter-percentile range of the drift-corrected data, then (ii) calculate the mean of this inter-percentile range by averaging across the scenarios. For each projection scenario, \emph{model uncertainty} is derived from the inter-model range: (i) for each model, calculate the mean of the agnostic-method drift-corrected data, then (ii) calculate the inter-model range. For each model, \emph{scenario uncertainty} is derived from the inter-scenario range: (i) for each projection scenario, calculate the mean of the agnostic-method drift-corrected data, then (ii) calculate the inter-scenario range. The final three rows contain summary statistics: the minimum, mean, and maximum of each column.}
+\begin{tabular}{c|rrr|rr}
 \toprule
-Source of uncertainty & Model or scenario & \multicolumn{2}{c|}{Uncertainty in $\beta$ (unitless)} & \multicolumn{2}{c|}{Uncertainty in $\epsilon$ (mm YJ$^{-1}$)} & \multicolumn{3}{c}{Uncertainty in ${\Delta}Z$ (mm)} \\
- &  & Trend-method & Int.-bias-method & Trend-method & Int.-bias-method & 1850s & 2050s & 2090s \\
+\multicolumn{6}{c}{Sources of uncertainty in $\Delta E$ (2050s; YJ)} \\ 
 \midrule
-\multirow[c]{16}{*}{Drift uncertainty} & ACCESS-CM2 & 0.00 & 0.07 & 1.0 & 5.9 & 15 & 5 & 9 \\
- & ACCESS-ESM1-5 & 0.01 & 0.08 & 1.3 & 6.9 & 10 & 3 & 6 \\
- & CMCC-CM2-SR5 & 0.01 & 0.12 & 1.7 & 10.0 & 25 & 8 & 15 \\
- & CMCC-ESM2 & 0.01 & 0.15 & 2.1 & 13.6 & 29 & 10 & 17 \\
- & CNRM-CM6-1 & 0.02 & 0.07 & 1.5 & 7.5 & 20 & 7 & 12 \\
- & CNRM-ESM2-1 & 0.02 & 0.08 & 1.8 & 8.5 & 20 & 7 & 12 \\
- & CanESM5 & 0.00 & 0.06 & 1.0 & 5.3 & 11 & 4 & 6 \\
- & EC-Earth3-Veg-LR & 0.01 & 0.11 & 2.0 & 9.5 & 24 & 8 & 14 \\
- & IPSL-CM6A-LR & 0.01 & 0.10 & 1.6 & 9.5 & 20 & 7 & 12 \\
- & MIROC6 & 0.01 & 0.13 & 0.9 & 10.7 & 6 & 2 & 3 \\
- & MPI-ESM1-2-HR & 0.01 & 0.11 & 1.5 & 8.3 & 14 & 5 & 8 \\
- & MPI-ESM1-2-LR & 0.01 & 0.11 & 1.4 & 9.0 & 6 & 2 & 4 \\
- & MRI-ESM2-0 & 0.01 & 0.10 & 0.9 & 7.0 & 11 & 4 & 6 \\
- & NorESM2-LM & 0.01 & 0.22 & 1.3 & 18.3 & 11 & 4 & 7 \\
- & NorESM2-MM & 0.01 & 0.20 & 1.8 & 17.3 & 9 & 3 & 5 \\
- & UKESM1-0-LL & 0.01 & 0.07 & 1.0 & 6.4 & 17 & 6 & 10 \\
-\cline{1-9}
-\multirow[c]{16}{*}{Scenario uncertainty} & ACCESS-CM2 & 0.01 &  & 5.7 &  &  & 22 & 152 \\
- & ACCESS-ESM1-5 & 0.01 &  & 7.3 &  &  & 28 & 140 \\
- & CMCC-CM2-SR5 & 0.08 &  & 6.7 &  &  & 21 & 108 \\
- & CMCC-ESM2 & 0.07 &  & 9.3 &  &  & 25 & 116 \\
- & CNRM-CM6-1 & 0.01 &  & 8.4 &  &  & 19 & 136 \\
- & CNRM-ESM2-1 & 0.01 &  & 7.6 &  &  & 12 & 116 \\
- & CanESM5 & 0.01 &  & 9.8 &  &  & 38 & 216 \\
- & EC-Earth3-Veg-LR & 0.01 &  & 9.0 &  &  & 21 & 147 \\
- & IPSL-CM6A-LR & 0.02 &  & 8.3 &  &  & 23 & 148 \\
- & MIROC6 & 0.01 &  & 4.1 &  &  & 21 & 129 \\
- & MPI-ESM1-2-HR & 0.03 &  & 6.5 &  &  & 21 & 120 \\
- & MPI-ESM1-2-LR & 0.01 &  & 6.0 &  &  & 20 & 125 \\
- & MRI-ESM2-0 & 0.01 &  & 6.1 &  &  & 24 & 154 \\
- & NorESM2-LM & 0.03 &  & 7.6 &  &  & 17 & 113 \\
- & NorESM2-MM & 0.02 &  & 9.5 &  &  & 16 & 114 \\
- & UKESM1-0-LL & 0.01 &  & 9.3 &  &  & 33 & 176 \\
-\cline{1-9}
-\multirow[c]{5}{*}{Model uncertainty} & Historical &  &  &  &  & 69 &  &  \\
- & SSP1-2.6 & 0.18 &  & 13.1 &  &  & 32 & 62 \\
- & SSP2-4.5 & 0.17 &  & 11.3 &  &  & 37 & 71 \\
- & SSP3-7.0 & 0.16 &  & 11.8 &  &  & 58 & 123 \\
- & SSP5-8.5 & 0.17 &  & 12.7 &  &  & 54 & 137 \\
-\cline{1-9}
+Model or scenario & \multicolumn{3}{c|}{Drift uncertainty} & \multicolumn{2}{c}{Other uncertainty} \\
+ & Int.-bias & Linear & Agnostic & Model & Scenario \\
+\midrule
+ACCESS-CM2 & 0.108 & 0.044 & 0.136 &  & 0.170 \\
+ACCESS-ESM1-5 & 0.050 & 0.006 & 0.036 &  & 0.213 \\
+CMCC-CM2-SR5 & 0.206 & 0.084 & 0.179 &  & 0.184 \\
+CMCC-ESM2 & 0.172 & 0.078 & 0.211 &  & 0.201 \\
+CNRM-CM6-1 & 0.125 & 0.028 & 0.200 &  & 0.161 \\
+CNRM-ESM2-1 & 0.153 & 0.030 & 0.249 &  & 0.104 \\
+CanESM5 & 0.046 & 0.012 & 0.066 &  & 0.304 \\
+EC-Earth3-Veg-LR & 0.151 & 0.036 & 0.252 &  & 0.160 \\
+IPSL-CM6A-LR & 0.105 & 0.023 & 0.083 &  & 0.195 \\
+MIROC6 & 0.057 & 0.010 & 0.089 &  & 0.163 \\
+MPI-ESM1-2-HR & 0.132 & 0.022 & 0.168 &  & 0.173 \\
+MPI-ESM1-2-LR & 0.050 & 0.009 & 0.045 &  & 0.163 \\
+MRI-ESM2-0 & 0.079 & 0.031 & 0.108 &  & 0.181 \\
+NorESM2-LM & 0.086 & 0.012 & 0.137 &  & 0.141 \\
+NorESM2-MM & 0.093 & 0.012 & 0.129 &  & 0.132 \\
+UKESM1-0-LL & 0.084 & 0.027 & 0.039 &  & 0.253 \\
+SSP1-2.6 &  &  &  & 0.638 &  \\
+SSP2-4.5 &  &  &  & 0.722 &  \\
+SSP3-7.0 &  &  &  & 0.900 &  \\
+SSP5-8.5 &  &  &  & 0.828 &  \\
+\midrule
+Min & 0.046 & 0.006 & 0.036 & 0.638 & 0.104 \\
+Mean & 0.103 & 0.028 & 0.127 & 0.745 & 0.177 \\
+Max & 0.206 & 0.084 & 0.252 & 0.900 & 0.304 \\
 \bottomrule
 \end{tabular}
 \end{table*}

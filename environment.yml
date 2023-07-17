@@ -7,12 +7,14 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.10
   - notebook
   - jupyterlab
   - cdo=2.*.*
-  - matplotlib=3.5.*
+  - matplotlib
   - xarray
   - NetCDF4
   - python-cdo=1.5.*
   - scipy
   - statsmodels
+  - watermark

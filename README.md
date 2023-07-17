@@ -26,7 +26,7 @@ conda activate d22a-mcdc
 The analysis has been performed within this environment on _macOS 13_ (arm64).
 
 _Windows_ users may need to remove the references to _Climate Data Operators_ (`cdo`, `python-cdo`) in [`environment.yml`](environment.yml).
-CDO is required by [`data_d22a.ipynb`](data_d22a.ipynb), but not by [`mcdc_analysis_d22a.ipynb`](mcdc_analysis_d22a.ipynb).
+CDO is required by [`data_d22a.ipynb`](data_d22a.ipynb), but not by [`analysis_d22a.ipynb`](analysis_d22a.ipynb).
 
 ### Preparation of data
 _CMIP6_ climate model data have been downloaded, post-processed, and prepared as follows:
@@ -45,13 +45,9 @@ This includes the following steps:
 The NetCDF files produced by [`data_d22a.ipynb`](data_d22a.ipynb) can be found in [**`data/`**](data/).
 
 ### Analysis
-Analysis of the data in [`data/`](data/) is performed using [**`mcdc_analysis_d22a.ipynb`**](mcdc_analysis_d22a.ipynb).
+Analysis of the data in [`data/`](data/) is performed using [**`analysis_d22a.ipynb`**](manalysis_d22a.ipynb).
 
-[`mcdc_analysis_d22a.ipynb`](mcdc_analysis_d22a.ipynb) contains the Monte Carlo Drift Correction (MCDC) functions, and it writes both figures (in [**`figs_d22a/`**](figs_d22a/)) and tables (in [**`tables_d22a/`**](tables_d22a/)).
-
-Are the trend-method MCDC results sensitive to the choice of estimation method?
-The analysis has been re-run using a robust linear model with Huber’s T norm (instead of ordinary least squares): [**`rlm/`**](rlm/).
-The results are similar.
+[`analysis_d22a.ipynb`](analysis_d22a.ipynb) uses the functions contained in [`d22a.py`](d22a.py), and it writes both figures (in [**`figs_d22a/`**](figs_d22a/)) and tables (in [**`tables_d22a/`**](tables_d22a/)).
 
 ## Author
 [Benjamin S. Grandey](https://grandey.github.io) (_Nanyang Technological University_), in collaboration with Zhi Yang Koh, Dhrubajyoti Samanta, Benjamin P. Horton, Justin Dauwels, and Lock Yue Chew.

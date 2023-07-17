@@ -1,0 +1,41 @@
+{
+  "title": "d22a-mcdc: Analysis Code for \"Monte Carlo Drift Correction \u2013 Quantifying the Drift Uncertainty of Global Climate Models\"",
+  "creators": [
+    {
+      "orcid": "0000-0003-1442-0906",
+      "affiliation": "School of Physical and Mathematical Sciences, Nanyang Technological University, Singapore",
+      "name": "Grandey, Benjamin S."
+    }
+  ],
+  "contributors": [
+    {
+      "affiliation": "School of Physical and Mathematical Sciences, Nanyang Technological University, Singapore",
+      "type": "Other",
+      "name": "Koh, Zhi Yang"
+    },
+    {
+      "affiliation": "Earth Observatory of Singapore, Nanyang Technological University, Singapore",
+      "type": "Other",
+      "name": "Samanta, Dhrubajyoti"
+    },
+    {
+      "affiliation": "Earth Observatory of Singapore, Nanyang Technological University, Singapore",
+      "type": "Other",
+      "name": "Horton, Benjamin P."
+    },
+    {
+      "affiliation": "Department of Microelectronics, Faculty of Electrical Engineering, Mathematics, and Computer Science, Delft University of Technology (TU Delft), The Netherlands",
+      "type": "Other",
+      "name": "Dauwels, Justin"
+    },
+    {
+      "affiliation": "School of Physical and Mathematical Sciences, Nanyang Technological University, Singapore",
+      "type": "Other",
+      "name": "Chew, Lock Yue"
+    }
+  ],
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "description": "<p>This repository accompanies the draft manuscript titled &quot;Monte Carlo Drift Correction &ndash; Quantifying the Drift Uncertainty of Global Climate Models&quot;. For further details, see README.md. For the most recent version, visit https://github.com/grandey/d22a-mcdc/.</p>"
+}

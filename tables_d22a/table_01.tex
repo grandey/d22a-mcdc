@@ -1,14 +1,16 @@
 \begin{table*}[t]
 \centering
-\caption{Sources of uncertainty in $\beta$ (fraction of excess energy absorbed by the ocean), $\epsilon$ (expansion efficiency of heat), and ${\Delta}Z$ (thermosteric sea-level rise, relative to 1995--2014), for the CMIP6 ensemble. \emph{Drift uncertainty} is derived from the 2nd--98th inter-percentile range of the drift-corrected data. \emph{Scenario uncertainty} is derived from the inter-scenario range. \emph{Model uncertainty} is derived from the inter-model range. For $\beta$ and $\epsilon$, drift uncertainty is calculated using both trend-method MCDC and integrated-bias-method MCDC. Scenario uncertainty and model uncertainty are relatively insensitive to the choice of drift correction method, so these sources of uncertainty are shown for trend-method MCDC only. When calculating the uncertainty in $\beta$, $\epsilon$, and ${\Delta}Z$ for future decades, the four projection scenarios are used (but not the historical scenario). When calculating the uncertainty in ${\Delta}Z$ for the 1850s, the single historical scenario is used instead, hence scenario uncertainty cannot be calculated for the 1850s. Expanded results -- showing the uncertainties for different models and scenarios -- are shown in Table~S2. The expanded results (Table~S2) have been averaged across models and scenarios to produce Table~1.}
-\begin{tabular}{c|rr|rr|rrr}
+\caption{CMIP6 ensemble mean and range (minimum–maximum) for different sources of uncertainty. For each drift-correction method, \emph{drift uncertainty} is derived from the 2nd--98th inter-percentile range of the drift-corrected data. \emph{Model uncertainty} is derived from the inter-model range. \emph{Scenario uncertainty} is derived from the inter-scenario range. The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. For further details, see Tables~S2--S6.}
+\begin{tabular}{cc|c|c|c|c|c}
 \toprule
-Source of uncertainty & \multicolumn{2}{c|}{Uncertainty in $\beta$ (unitless)} & \multicolumn{2}{c|}{Uncertainty in $\epsilon$ (mm YJ$^{-1}$)} & \multicolumn{3}{c}{Uncertainty in ${\Delta}Z$ (mm)} \\
- & Trend-method & Int.-bias-method & Trend-method & Int.-bias-method & 1850s & 2050s & 2090s \\
+ &  & $\Delta E$ (2050s; YJ) & $\Delta H$ (2050s; YJ) & $\Delta Z$ (2050s; mm) & $\eta$ (unitless) & $\epsilon$ (mm YJ$^{-1}$) \\
 \midrule
-Drift uncertainty & 0.01 & 0.11 & 1.4 & 9.6 & 15 & 5 & 9 \\
-Scenario uncertainty & 0.02 &  & 7.6 &  &  & 23 & 138 \\
-Model uncertainty & 0.17 &  & 12.2 &  & 69 & 45 & 98 \\
+\multirow[c]{3}{*}{Drift uncertainty} & Int.-bias & 0.103 (0.046–0.206) & 0.103 (0.043–0.204) &  & 0.033 (0.012–0.070) &  \\
+ & Linear & 0.028 (0.006–0.084) & 0.028 (0.005–0.084) & 3.4 (0.7–10.8) & 0.009 (0.002–0.029) & 1.1 (0.2–3.4) \\
+ & Agnostic & 0.127 (0.036–0.252) & 0.131 (0.039–0.324) & 15.7 (4.4–35.2) & 0.059 (0.007–0.154) & 7.4 (0.8–21.1) \\
+\midrule
+\multirow[c]{2}{*}{Other uncertainty} & Model & 0.745 (0.638–0.900) & 0.780 (0.723–0.887) & 82.7 (73.9–98.1) & 0.171 (0.162–0.181) & 12.2 (11.5–13.3) \\
+ & Scenario & 0.177 (0.104–0.304) & 0.167 (0.086–0.290) & 21.9 (12.1–37.9) & 0.021 (0.006–0.079) & 7.4 (4.1–9.9) \\
 \bottomrule
 \end{tabular}
 \end{table*}
