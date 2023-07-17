@@ -72,6 +72,7 @@ O_NUM = itertools.count(1)  # other figures counter
 TABLE_DIR = pathlib.Path.cwd() / 'tables_d22a'  # director in which to save tables
 T_NUM = itertools.count(1)  # main tables counter
 ST_NUM = itertools.count(1)  # supplementary tables counter
+OT_NUM = itertools.count(1)  # other tables counter
 
 
 def get_watermark():
@@ -253,6 +254,7 @@ def get_esm_info_df():
         in_ds = xr.open_dataset(in_fns[0])
         # Calendar
         calendar = in_ds['time'].attrs['calendar']
+        calendar = calendar.replace('_', ' ')  # replace '_' with space
         # Further info URL
         further_info_url = in_ds.attrs['further_info_url']
         # Save to DataFrame
@@ -1105,3 +1107,20 @@ def name_save_fig(fig,
     if close:
         plt.close()
     return fig_name
+
+
+def name_save_table(tex_str, fso='f'):
+    """Name & save a Latex table, and increase counter."""
+    # Name based on counter, then update counter (in preparation for next figure)
+    if fso == 'f':
+        table_name = f'table_{next(T_NUM):02}.tex'
+    elif fso == 's':
+        table_name = f'table_S{next(ST_NUM):02}.tex'
+    else:
+        table_name = f'table_O{next(OT_NUM):02}.tex'
+    # Save
+    table_path = TABLE_DIR.joinpath(table_name)
+    with open(table_path, 'w') as f:
+        f.write(tex_str)
+    print(f'Written {table_name}')
+    return table_name
