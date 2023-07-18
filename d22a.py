@@ -510,7 +510,7 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     # Row index
     index_list = [esm.split('_')[0] for esm in esms]
     index_list += [SCENARIO_DICT[scenario] for scenario in scenarios]
-    index_list += ['Min', 'Mean', 'Max']
+    index_list += ['Min', 'Median', 'Max']
     index = pd.Index(index_list)
     # Initialize DataFrame
     detailed_df = pd.DataFrame(columns=column_index, index=index)
@@ -539,9 +539,9 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
                 uncertainty = calc_model_uncertainty(variable=variable, degree='agnostic', scenario=scenario,
                                                      target_decade=target_decade, sample_n=sample_n)
                 detailed_df.loc[SCENARIO_DICT[scenario], column] = uncertainty  # save model uncertainty
-    # Calculate min, mean, and max of each column
+    # Calculate min, median, and max of each column
     detailed_df.loc['Min'] = detailed_df.min(axis=0, skipna=True)
-    detailed_df.loc['Mean'] = detailed_df.mean(axis=0, skipna=True)
+    detailed_df.loc['Median'] = detailed_df.median(axis=0, skipna=True)
     detailed_df.loc['Max'] = detailed_df.max(axis=0, skipna=True)
     # Round to specific number of decimal places
     if variable in ['Z', 'eps']:
@@ -574,7 +574,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
                'For each model, \emph{scenario uncertainty} is derived from the inter-scenario range: '
                '(i) for each projection scenario, calculate the mean of the agnostic-method drift-corrected data, '
                'then (ii) calculate the inter-scenario range. '
-               'The final three rows contain summary statistics: the minimum, mean, and maximum of each column.')
+               'The final three rows contain summary statistics: the minimum, median, and maximum of each column.')
     # Column format, number of columns, and decimal places formatter
     if variable in ['Z', 'eps']:
         column_format='c|rr|rr'
@@ -618,7 +618,7 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
         # Get detailed DataFrame
         detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
         # List and Series of formatted mean and range
-        zipped_stats = zip(detailed_df.loc['Mean'], detailed_df.loc['Min'], detailed_df.loc['Max'])
+        zipped_stats = zip(detailed_df.loc['Median'], detailed_df.loc['Min'], detailed_df.loc['Max'])
         if variable in ['Z', 'eps']:
             summary_list = [f'{a:.1f} ({b:.1f}–{c:.1f})' for a, b, c in zipped_stats]
         elif variable in ['E', 'H']:
@@ -639,7 +639,7 @@ def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050
     # Get DataFrame
     summary_df = get_summary_df(variables=variables, target_decade=target_decade, sample_n=sample_n)
     # Caption
-    caption = (f'CMIP6 ensemble mean and range (minimum–maximum) for different sources of uncertainty. '
+    caption = (f'CMIP6 ensemble median and range (minimum–maximum) for different sources of uncertainty. '
                'For each drift-correction method, \emph{drift uncertainty} is derived from '
                'the 2nd--98th inter-percentile range of the drift-corrected data. '
                '\emph{Model uncertainty} is derived from the inter-model range. '
