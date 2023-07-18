@@ -684,6 +684,7 @@ def plot_uncorrected_timeseries(esm=DEF_ESM, variable='Ep', scenarios=('piContro
     # Axis ticks
     ax.set_xticks(np.arange(1850, 2101, 50))
     ax.minorticks_on()
+    ax.tick_params(axis='both', left=True, top=False, right=True, bottom=True)
     # Limit x-axis and time series to 1850-2100 or 1850-2014?
     if bool({'ssp126', 'ssp245', 'ssp370', 'ssp585'} & set(scenarios)):
         ax.set_xlim([1850, 2100])
@@ -737,6 +738,7 @@ def plot_control_with_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample
     # x-axis ticks and range
     ax.set_xticks(np.arange(0, pi_da.Year[-1], 200))
     ax.minorticks_on()
+    ax.tick_params(axis='both', left=True, top=False, right=True, bottom=True)
     ax.set_xlim(pi_da.Year[0], pi_da.Year[-1])
     # Labels, legend etc
     ax.set_xlabel('Year')
@@ -786,6 +788,7 @@ def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree='agnostic', scen
     else:
         ax.set_xticks(np.arange(1850, 2100, 50))
     ax.minorticks_on()
+    ax.tick_params(axis='both', left=True, top=False, right=True, bottom=True)
     if bool({'ssp126', 'ssp245', 'ssp370', 'ssp585'} & set(scenarios)):
         ax.set_xlim([1850, 2100])
     elif 'historical' in scenarios:
@@ -976,6 +979,9 @@ def boxplot_of_variable(esm=DEF_ESM, variable='E',
                                                target_decade=target_decade, sample_n=sample_n, plot=False)
             data_da_list.append(data_da)
             tick_label_list.append(SCENARIO_DICT[scenario])
+    # For eta, plot eta = 1 line
+    if variable == 'eta':
+        ax.axhline(1., color='0.9')
     # Plot data: median, 25-75, 2-98, and outliers
     ax.boxplot(data_da_list, whis=[2, 98], sym='.', flierprops={'markersize': 1})
     # Annotate segments of figure
