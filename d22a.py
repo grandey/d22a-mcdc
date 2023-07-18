@@ -546,6 +546,8 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     # Round to specific number of decimal places
     if variable in ['Z', 'eps']:
         detailed_df = detailed_df.astype('float64').round(1)
+    elif variable in ['E', 'H']:
+        detailed_df = detailed_df.astype('float64').round(2)
     else:
         detailed_df = detailed_df.astype('float64').round(3)
     return detailed_df
@@ -578,6 +580,10 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
         column_format='c|rr|rr'
         n_cols = 5
         formatter = '{:.1f}'
+    elif variable in ['E', 'H']:
+        column_format='c|rrr|rr'
+        n_cols = 6
+        formatter = '{:.2f}'
     else:
         column_format='c|rrr|rr'
         n_cols = 6
@@ -615,6 +621,8 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
         zipped_stats = zip(detailed_df.loc['Mean'], detailed_df.loc['Min'], detailed_df.loc['Max'])
         if variable in ['Z', 'eps']:
             summary_list = [f'{a:.1f} ({b:.1f}–{c:.1f})' for a, b, c in zipped_stats]
+        elif variable in ['E', 'H']:
+            summary_list = [f'{a:.2f} ({b:.1f}–{c:.2f})' for a, b, c in zipped_stats]
         else:
             summary_list = [f'{a:.3f} ({b:.3f}–{c:.3f})' for a, b, c in zipped_stats]
         summary_ser = pd.Series(summary_list, index=detailed_df.columns)
@@ -638,13 +646,6 @@ def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050
                '\emph{Scenario uncertainty} is derived from the inter-scenario range. '
                'The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. '
                'For further details, see Tables~S2--S6.')
-    # # Decimal places formatter
-    # formatter_dict = {}
-    # for col in summary_df.columns:
-    #     if 'mm' in col:  # Z and eps are the variables with mm in their units
-    #         formatter_dict[col] = '{:.1f}'
-    #     else:
-    #         formatter_dict[col] = '{:.3f}'
     # Convert DataFrame to Latex
     tex_str = summary_df.style.format(na_rep='').to_latex(
             environment='table*', position='t', position_float='centering',
