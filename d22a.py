@@ -494,7 +494,12 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     """Detailed DataFrame showing drift, model, and scenario uncertainty."""
     # Lists of ESMs and scenarios
     esms = get_cmip6_df(esm=True, scenario=True)['ESM'].unique()
-    scenarios = ['ssp126', 'ssp245', 'ssp370', 'ssp585']
+    if variable in ['eta', 'eps']:
+        scenarios = ['ssp126', 'ssp245', 'ssp370', 'ssp585']
+    elif target_decade == '2000s':
+        scenarios = ['historical',]
+    else:
+        scenarios = ['ssp126', 'ssp245', 'ssp370', 'ssp585']
     # MCDC methods to use depend on variable
     if variable in ['E', 'H', 'eta']:
         degrees = ('int.-bias', 'linear', 'agnostic')
@@ -505,7 +510,8 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     for degree in degrees:
         column_tuples.append(('Drift uncertainty', degree.capitalize()))
     column_tuples.append(('Other uncertainty', 'Model'))
-    column_tuples.append(('Other uncertainty', 'Scenario'))
+    if target_decade != '2000s':
+        column_tuples.append(('Other uncertainty', 'Scenario'))
     column_index = pd.MultiIndex.from_tuples(column_tuples)
     # Row index
     index_list = [esm.split('_')[0] for esm in esms]
@@ -562,32 +568,46 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
         variable_str = SYMBOLS_DICT[variable]
     else:
         variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade}, relative to {REF_STR})'
-    caption = (f'Sources of uncertainty in {variable_str}. '
-               'For each drift-correction method and model, '
-               '\emph{drift uncertainty} is derived from the 2nd--98th inter-percentile range: '
-               '(i) for each projection scenario, '
-               'calculate the 2nd--98th inter-percentile range of the drift-corrected data, '
-               'then (ii) calculate the mean of this inter-percentile range by averaging across the scenarios. '
-               'For each projection scenario, \emph{model uncertainty} is derived from the inter-model range: '
-               '(i) for each model, calculate the mean of the agnostic-method drift-corrected data, '
-               'then (ii) calculate the inter-model range. '
-               'For each model, \emph{scenario uncertainty} is derived from the inter-scenario range: '
-               '(i) for each projection scenario, calculate the mean of the agnostic-method drift-corrected data, '
-               'then (ii) calculate the inter-scenario range. '
-               'The final three rows contain summary statistics: the minimum, median, and maximum of each column.')
+    if target_decade == '2000s':
+        caption = (
+            f'Sources of uncertainty in {variable_str}. '
+            'For each drift-correction method and model, '
+            '\emph{drift uncertainty} corresponds to the 2nd--98th inter-percentile range. '
+            '\emph{Model uncertainty} corresponds to the inter-model range: '
+            '(i) for each model, calculate the mean of the agnostic-method drift-corrected data, '
+            'then (ii) calculate the inter-model range. '
+            'The final three rows contain summary statistics: the minimum, median, and maximum of each column.')
+    else:
+        caption = (
+            f'Sources of uncertainty in {variable_str}. '
+            'For each drift-correction method and model, '
+            '\emph{drift uncertainty} corresponds to the 2nd--98th inter-percentile range: '
+            '(i) for each projection scenario, '
+            'calculate the 2nd--98th inter-percentile range of the drift-corrected data, '
+            'then (ii) calculate the mean of this inter-percentile range by averaging across the projection scenarios. '
+            'For each projection scenario, \emph{model uncertainty} corresponds to the inter-model range: '
+            '(i) for each model, calculate the mean of the agnostic-method drift-corrected data, '
+            'then (ii) calculate the inter-model range. '
+            'For each model, \emph{scenario uncertainty} corresponds to the inter-scenario range: '
+            '(i) for each projection scenario, calculate the mean of the agnostic-method drift-corrected data, '
+            'then (ii) calculate the inter-scenario range. '
+            'The final three rows contain summary statistics: the minimum, median, and maximum of each column.')
     # Column format, number of columns, and decimal places formatter
     if variable in ['Z', 'eps']:
-        column_format='c|rr|rr'
-        n_cols = 5
+        column_format = 'c|rr|r'
+        n_cols = 4
         formatter = '{:.0f}'
     elif variable in ['E', 'H']:
-        column_format='c|rrr|rr'
-        n_cols = 6
+        column_format = 'c|rrr|r'
+        n_cols = 5
         formatter = '{:.2f}'
     else:
-        column_format='c|rrr|rr'
-        n_cols = 6
+        column_format = 'c|rrr|r'
+        n_cols = 5
         formatter = '{:.2f}'
+    if target_decade != '2000s':
+        column_format += 'r'
+        n_cols += 1
     # Convert DataFrame to Latex
     tex_str = detailed_df.style.format(formatter=formatter, na_rep='').to_latex(
             environment='table*', position='t', position_float='centering',
@@ -611,13 +631,17 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
 @cache
 def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s', sample_n=SAMPLE_N):
     """Summary DataFrame showing drift, model, and scenario uncertainty for multiple variables."""
-    # Create empty summary DataFrame
-    summary_df = pd.DataFrame()
+    # Create empty summary DataFrame, with index that includes scenario uncertainty
+    index = get_detailed_df(variable='eta', target_decade=None, sample_n=sample_n).columns
+    summary_df = pd.DataFrame(index=index)
     # Loop over variables
     for variable in variables:
         # Get detailed DataFrame
-        detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
-        # List and Series of formatted mean and range
+        if variable in ['eta', 'eps']:
+            detailed_df = get_detailed_df(variable=variable, target_decade=None, sample_n=sample_n)
+        else:
+            detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
+        # List and Series of formatted median and range
         zipped_stats = zip(detailed_df.loc['Median'], detailed_df.loc['Min'], detailed_df.loc['Max'])
         if variable in ['Z', 'eps']:
             summary_list = [f'{a:.0f} ({b:.0f}–{c:.0f})' for a, b, c in zipped_stats]
@@ -626,6 +650,9 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
         else:
             summary_list = [f'{a:.2f} ({b:.2f}–{c:.2f})' for a, b, c in zipped_stats]
         summary_ser = pd.Series(summary_list, index=detailed_df.columns)
+        # Remove redundant range for model uncertainty if only historical scenario has been used
+        if (variable not in ['eta', 'eps']) and (target_decade == '2000s'):
+            summary_ser[('Other uncertainty', 'Model')] = summary_ser[('Other uncertainty', 'Model')].split(' ')[0]
         # Save mean and range to new column of summary DataFrame
         if variable in ['eta', 'eps']:
             summary_df[f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})'] = summary_ser
@@ -640,10 +667,10 @@ def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050
     summary_df = get_summary_df(variables=variables, target_decade=target_decade, sample_n=sample_n)
     # Caption
     caption = (f'CMIP6 ensemble median and range (minimum–maximum) for different sources of uncertainty. '
-               'For each drift-correction method, \emph{drift uncertainty} is derived from '
+               'For each drift-correction method, \emph{drift uncertainty} corresponds to '
                'the 2nd--98th inter-percentile range of the drift-corrected data. '
-               '\emph{Model uncertainty} is derived from the inter-model range. '
-               '\emph{Scenario uncertainty} is derived from the inter-scenario range. '
+               '\emph{Model uncertainty} corresponds to from the inter-model range. '
+               '\emph{Scenario uncertainty} corresponds to the inter-scenario range. '
                'The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. '
                'For further details, see Tables~S2--S6.')
     # Convert DataFrame to Latex
