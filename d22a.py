@@ -545,11 +545,11 @@ def get_detailed_df(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     detailed_df.loc['Max'] = detailed_df.max(axis=0, skipna=True)
     # Round to specific number of decimal places
     if variable in ['Z', 'eps']:
-        detailed_df = detailed_df.astype('float64').round(1)
+        detailed_df = detailed_df.astype('float64').round(0)
     elif variable in ['E', 'H']:
         detailed_df = detailed_df.astype('float64').round(2)
     else:
-        detailed_df = detailed_df.astype('float64').round(3)
+        detailed_df = detailed_df.astype('float64').round(2)
     return detailed_df
 
 
@@ -579,7 +579,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     if variable in ['Z', 'eps']:
         column_format='c|rr|rr'
         n_cols = 5
-        formatter = '{:.1f}'
+        formatter = '{:.0f}'
     elif variable in ['E', 'H']:
         column_format='c|rrr|rr'
         n_cols = 6
@@ -587,7 +587,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     else:
         column_format='c|rrr|rr'
         n_cols = 6
-        formatter = '{:.3f}'
+        formatter = '{:.2f}'
     # Convert DataFrame to Latex
     tex_str = detailed_df.style.format(formatter=formatter, na_rep='').to_latex(
             environment='table*', position='t', position_float='centering',
@@ -620,11 +620,11 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
         # List and Series of formatted mean and range
         zipped_stats = zip(detailed_df.loc['Median'], detailed_df.loc['Min'], detailed_df.loc['Max'])
         if variable in ['Z', 'eps']:
-            summary_list = [f'{a:.1f} ({b:.1f}–{c:.1f})' for a, b, c in zipped_stats]
+            summary_list = [f'{a:.0f} ({b:.0f}–{c:.0f})' for a, b, c in zipped_stats]
         elif variable in ['E', 'H']:
             summary_list = [f'{a:.2f} ({b:.2f}–{c:.2f})' for a, b, c in zipped_stats]
         else:
-            summary_list = [f'{a:.3f} ({b:.3f}–{c:.3f})' for a, b, c in zipped_stats]
+            summary_list = [f'{a:.2f} ({b:.2f}–{c:.2f})' for a, b, c in zipped_stats]
         summary_ser = pd.Series(summary_list, index=detailed_df.columns)
         # Save mean and range to new column of summary DataFrame
         if variable in ['eta', 'eps']:
