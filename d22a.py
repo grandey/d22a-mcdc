@@ -622,7 +622,7 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
         if variable in ['Z', 'eps']:
             summary_list = [f'{a:.1f} ({b:.1f}–{c:.1f})' for a, b, c in zipped_stats]
         elif variable in ['E', 'H']:
-            summary_list = [f'{a:.2f} ({b:.1f}–{c:.2f})' for a, b, c in zipped_stats]
+            summary_list = [f'{a:.2f} ({b:.2f}–{c:.2f})' for a, b, c in zipped_stats]
         else:
             summary_list = [f'{a:.3f} ({b:.3f}–{c:.3f})' for a, b, c in zipped_stats]
         summary_ser = pd.Series(summary_list, index=detailed_df.columns)
