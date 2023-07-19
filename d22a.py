@@ -565,7 +565,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
     # Caption
     if variable in ['eta', 'eps']:
-        variable_str = SYMBOLS_DICT[variable]
+        variable_str = f'{SYMBOLS_DICT[variable]} (21st century)'
     else:
         variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade}, relative to {REF_STR})'
     if target_decade == '2000s':
@@ -671,6 +671,7 @@ def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050
                'the 2nd--98th inter-percentile range of the drift-corrected data. '
                '\emph{Model uncertainty} corresponds to from the inter-model range. '
                '\emph{Scenario uncertainty} corresponds to the inter-scenario range. '
+               'The statistics for $\eta$ and $\epsilon$ are based on the 21st-century projection simulations. '
                'The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. '
                'For further details, see Tables~S2--S6.')
     # Convert DataFrame to Latex
