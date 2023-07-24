@@ -567,7 +567,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     if variable in ['eta', 'eps']:
         variable_str = f'{SYMBOLS_DICT[variable]} (21st century)'
     else:
-        variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade}, relative to {REF_STR})'
+        variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade} relative to {REF_STR})'
     if target_decade == '2000s':
         caption = (
             f'Sources of uncertainty in {variable_str}. '
@@ -669,7 +669,7 @@ def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050
     caption = (f'CMIP6 ensemble median and range (minimum–maximum) for different sources of uncertainty. '
                'For each drift-correction method, \emph{drift uncertainty} corresponds to '
                'the 2nd--98th inter-percentile range of the drift-corrected data. '
-               '\emph{Model uncertainty} corresponds to from the inter-model range. '
+               '\emph{Model uncertainty} corresponds to the inter-model range. '
                '\emph{Scenario uncertainty} corresponds to the inter-scenario range. '
                'The statistics for $\eta$ and $\epsilon$ are based on the 21st-century projection simulations. '
                'The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. '
@@ -1090,15 +1090,15 @@ def composite_compare_methods_timeseries(esm=DEF_ESM, variable='E', degrees=True
     # Loop over methods, which correspond to rows
     for j, degree in enumerate(degrees):
         # 1st column: drift samples
-        title = f'({chr(97+j*4)}) {degree.capitalize()}-method drift samples'
+        title = f'({chr(97+j*3)}) {degree.capitalize()}-method drift samples'
         plot_control_with_drift(esm=esm, variable=variable, degree=degree,
                                 sample_n=sample_n, title=title, legend=True, ax=axs[j, 0])
         # 2nd column: corrected control time series
-        title = f'({chr(97+j*4+1)}) {degree.capitalize()}-corrected control'
+        title = f'({chr(97+j*3+1)}) {degree.capitalize()}-corrected control'
         plot_corrected_timeseries(esm=esm, variable=variable, degree=degree, scenarios=('piControl',),
                                   sample_n=sample_n, plot_uncorrected=True, title=title, legend=True, ax=axs[j, 1])
         # 3rd column: corrected historical time series
-        title = f'({chr(97+j*4+2)}) {degree.capitalize()}-corrected historical'
+        title = f'({chr(97+j*3+2)}) {degree.capitalize()}-corrected historical'
         plot_corrected_timeseries(esm=esm, variable=variable, degree=degree, scenarios=('historical',),
                                   sample_n=sample_n, plot_uncorrected=True, title=title, legend=True, ax=axs[j, 2])
     # Share y limits within column
