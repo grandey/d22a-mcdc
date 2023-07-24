@@ -297,6 +297,12 @@ def sample_drift(esm=DEF_ESM, variable='E', degree='agnostic', sample_n=SAMPLE_N
         x_tk = np.stack([(pi_da.Year - REF_YRS[0])**k for k in range(degree+1)]).transpose()  # ref to REF_YRS[0]
         # OLS fit to full control time series, with heteroskedasticity-autocorrelation robust covariance
         sm_reg = sm.OLS(pi_da.data, x_tk).fit().get_robustcov_results(cov_type='HAC', maxlags=100)
+        # If default ESM, then print the standard error
+        if esm == DEF_ESM:
+            if degree == 0:
+                print(f'sample_drift({esm}, {variable}, {degree}): standard error of mean is {sm_reg.bse[0]}')
+            elif degree == 1:
+                print(f'sample_drift({esm}, {variable}, {degree}): standard error of trend is {sm_reg.bse[1]}')
         # Sample parameters and standard error, assuming Gaussian distribution; n refers to sample draw
         params_nk = RNG.normal(loc=sm_reg.params, scale=sm_reg.bse, size=(sample_n, degree+1))
         # Sample drift using the parameter samples
@@ -809,7 +815,8 @@ def plot_corrected_timeseries(esm=DEF_ESM, variable='E', degree='agnostic', scen
                 label = f'{SCENARIO_DICT[scenario]} ({degree}; n={sample_n})'
             else:
                 label = None
-            ax.plot(corr_da.Year, corr_da.isel(Draw=i), color=SCENARIO_C_DICT[scenario], alpha=10./sample_n, label=label)
+            ax.plot(corr_da.Year, corr_da.isel(Draw=i), color=SCENARIO_C_DICT[scenario], alpha=10./sample_n,
+                    label=label)
     # x-axis ticks and range
     if 'piControl' in scenarios:
         ax.set_xticks(np.arange(0, 3000, 200))
