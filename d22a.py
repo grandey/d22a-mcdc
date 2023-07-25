@@ -33,10 +33,10 @@ plt.rcParams['savefig.dpi'] = 300
 IN_BASE = pathlib.Path.cwd() / 'data'  # base directory of input data produced by data_d22a.ipynb
 
 SYMBOLS_DICT = {'Ep': "$E \prime$",  # TOA radiative flux
-                'E': "$\Delta E$",  # change in Earth system energy
+                'E': "$\Delta E$",  # excess system energy
                 'Hp': "$H \prime$",  # sea-surface heat flux
-                'H': "$\Delta H$",  # change in ocean heat content
-                'Z': "$\Delta Z$",  # change in thermosteric sea level
+                'H': "$\Delta H$",  # excess ocean heat
+                'Z': "$\Delta Z$",  # thermosteric sea level rise
                 'eta': "$\eta$",  # fraction of excess energy absorbed by the ocean
                 'eps': "$\epsilon$",  # ocean expansion efficiency of heat
                 }
@@ -87,7 +87,7 @@ def get_calendar_days_branch(esm=DEF_ESM):
     # Read historical Dataset
     in_fns = sorted(IN_BASE.glob(f'*/zostoga/{esm}/*_{esm}_historical.mergetime.nc'))
     if len(in_fns) != 1:
-        print(f'et_calendar_ndays_branch({esm}): {len(in_fns)} files found for zostoga; using {in_fns[0]}')
+        print(f'get_calendar_days_branch({esm}): {len(in_fns)} files found for zostoga; using {in_fns[0]}')
     in_ds = xr.open_dataset(in_fns[0])
     # Calendar
     calendar = in_ds['time'].attrs['calendar']
@@ -167,7 +167,7 @@ def get_cmip6_df(esm=True, scenario=True):
             except IndexError:
                 if cmip6_var != 'hfcorr':
                     print(f'get_cmip6_df({esm}, {scenario}): no {cmip6_var} data found')
-        # Merge DataArrays of different into single Dataset, using common years
+        # Merge DataArrays of different variables into single Dataset, using common years
         in_ds = xr.merge(in_da_list, join='inner')
         # Shift control according to branch year (derived from historical)
         if scenario == 'piControl':
@@ -216,7 +216,7 @@ def get_cmip6_df(esm=True, scenario=True):
         E = Ep.cumsum().rename('E') * convert_Wm2yr_YJ  # W m-2 yr -> JY
         H = Hp.cumsum().rename('H') * convert_Wm2yr_YJ
         Z = in_ds['zostoga'].rename('Z') * 1e3  # m -> mm
-        # Reference non-flux data reference period
+        # Reference non-flux data to reference period
         for da in [E, H, Z]:
             da -= da.sel(time=slice(REF_YRS[0], REF_YRS[1])).mean()
         # Save to DataFrame
@@ -270,7 +270,7 @@ def get_esm_info_tex():
     info_df = get_esm_info_df()
     # Caption
     caption = ("Coupled Model Intercomparison Project Phase 6 (CMIP6) models analysed in this study. "
-               "``Control length'' refers to the time series length of the pre-industrial control simulation data. "
+               "``Control length'' refers to the time series length of the pre-industrial control time series. "
                "The further information URLs also correspond to the control simulations. ")
     # Convert DataFrame to Latex
     tex_str = info_df.style.to_latex(environment='table*', position='t', position_float='centering',
@@ -571,7 +571,7 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
     # Caption
     if variable in ['eta', 'eps']:
-        variable_str = f'{SYMBOLS_DICT[variable]} (21st century)'
+        variable_str = f'{SYMBOLS_DICT[variable]} (2015–2100)'
     else:
         variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade} relative to {REF_STR})'
     if target_decade == '2000s':
@@ -661,7 +661,7 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
             summary_ser[('Other uncertainty', 'Model')] = summary_ser[('Other uncertainty', 'Model')].split(' ')[0]
         # Save mean and range to new column of summary DataFrame
         if variable in ['eta', 'eps']:
-            summary_df[f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})'] = summary_ser
+            summary_df[f'{SYMBOLS_DICT[variable]} (2015–2100; {UNITS_DICT[variable]})'] = summary_ser
         else:
             summary_df[f'{SYMBOLS_DICT[variable]} ({target_decade}; {UNITS_DICT[variable]})'] = summary_ser
     return summary_df
@@ -1198,10 +1198,10 @@ def composite_rel_eta_eps_demo(esm=DEF_ESM, degree='agnostic', sample_n=SAMPLE_N
         for i, scenarios in enumerate([('historical',), True]):
             title = f'({chr(97+3*j+i)}) {SYMBOLS_DICT[y_var]} vs {SYMBOLS_DICT[x_var]}'
             if scenarios == ('historical',):
-                title = f'{title} (historical; {degree})'
+                title = f'{title} (1850–2014; {degree})'
                 plot_largest_intercept = True
             else:
-                title = f'{title} (projections; {degree})'
+                title = f'{title} (2015–2100; {degree})'
                 plot_largest_intercept = False
             _ = scatter_line_rel(esm=esm, x_var=x_var, y_var=y_var, scenarios=scenarios,
                                  plot_uncorrected=False, degree=degree, sample_n=sample_n,
