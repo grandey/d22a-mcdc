@@ -661,7 +661,7 @@ def get_summary_df(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050s
             summary_ser[('Other uncertainty', 'Model')] = summary_ser[('Other uncertainty', 'Model')].split(' ')[0]
         # Save mean and range to new column of summary DataFrame
         if variable in ['eta', 'eps']:
-            summary_df[f'{SYMBOLS_DICT[variable]} (2015–2100; {UNITS_DICT[variable]})'] = summary_ser
+            summary_df[f'{SYMBOLS_DICT[variable]} ({UNITS_DICT[variable]})'] = summary_ser
         else:
             summary_df[f'{SYMBOLS_DICT[variable]} ({target_decade}; {UNITS_DICT[variable]})'] = summary_ser
     return summary_df
@@ -677,7 +677,8 @@ def get_summary_tex(variables=('E', 'H', 'Z', 'eta', 'eps'), target_decade='2050
                'the 2nd--98th inter-percentile range of the drift-corrected data. '
                '\emph{Model uncertainty} corresponds to the inter-model range. '
                '\emph{Scenario uncertainty} corresponds to the inter-scenario range. '
-               'The statistics for $\eta$ and $\epsilon$ are based on the 21st-century projection simulations. '
+               'The statistics for $\eta$ and $\epsilon$ are based on the 21st-century projection simulations '
+               '(2015–2100). '
                'The ensemble statistics shown here correspond to the summary statistics shown in Tables~S2--S6. '
                'For further details, see Tables~S2--S6.')
     # Convert DataFrame to Latex
