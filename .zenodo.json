@@ -1,5 +1,5 @@
 {
-  "title": "d22a-mcdc: Analysis Code for \"Monte Carlo Drift Correction \u2013 Quantifying the Drift Uncertainty of Global Climate Models\"",
+  "title": "Analysis Code for \"Monte Carlo Drift Correction \u2013 Quantifying the Drift Uncertainty of Global Climate Models\"",
   "creators": [
     {
       "orcid": "0000-0003-1442-0906",
@@ -37,5 +37,5 @@
   "upload_type": "software",
   "license": "MIT",
   "access_right": "open",
-  "description": "<p>This repository accompanies the draft manuscript titled &quot;Monte Carlo Drift Correction &ndash; Quantifying the Drift Uncertainty of Global Climate Models&quot;. For further details, see README.md. For the most recent version, visit https://github.com/grandey/d22a-mcdc/.</p>"
+  "description": "<p>This repository accompanies the draft manuscript titled &quot;Monte Carlo Drift Correction &ndash; Quantifying the Drift Uncertainty of Global Climate Models&quot;. For further details, see README.md. For the most recent version of the repository, visit https://github.com/grandey/d22a-mcdc/.</p>"
 }
