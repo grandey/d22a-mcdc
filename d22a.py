@@ -571,9 +571,12 @@ def get_detailed_tex(variable='E', target_decade='2050s', sample_n=SAMPLE_N):
     detailed_df = get_detailed_df(variable=variable, target_decade=target_decade, sample_n=sample_n)
     # Caption
     if variable in ['eta', 'eps']:
-        variable_str = f'{SYMBOLS_DICT[variable]} (2015–2100)'
+        variable_str = (f'{SYMBOLS_DICT[variable]}. '
+                        f'We calculate {SYMBOLS_DICT[variable]} for the period 2015 to 2100')
     else:
-        variable_str = f'{SYMBOLS_DICT[variable]} ({target_decade} relative to {REF_STR})'
+        variable_str = (f'{SYMBOLS_DICT[variable]}. '
+                        f'We calculate {SYMBOLS_DICT[variable]} as the decadal mean for the {target_decade} '
+                        f'relative to the {REF_STR}')
     if target_decade == '2000s':
         caption = (
             f'Sources of uncertainty in {variable_str}. '
