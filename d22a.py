@@ -1,6 +1,6 @@
 """
 d23a:
-    Functions that support the analysis contained in the d23a-mcdc repository.
+    Functions that support the analysis contained in the d22a-mcdc repository.
 
 Author:
     Benjamin S. Grandey, 2022-2023.
