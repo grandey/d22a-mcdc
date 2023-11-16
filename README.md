@@ -5,7 +5,7 @@
 ## Usage guidelines
 This repository accompanies the following manuscript:
 
-B. S. Grandey, Z. Y. Koh, D. Samanta, B. P. Horton, J. Dauwels, and L. Y. Chew (2023),  **Monte Carlo Drift Correction – Quantifying the Drift Uncertainty of Global Climate Models**, _EGUsphere [preprint]_, https://doi.org/10.5194/egusphere-2022-1515.
+B. S. Grandey, Z. Y. Koh, D. Samanta, B. P. Horton, J. Dauwels, and L. Y. Chew (2023),  **Monte Carlo drift correction – quantifying the drift uncertainty of global climate models**, _Geosci. Model Dev._, https://doi.org/10.5194/gmd-16-6593-2023.
 
 The manuscript serves as the primary reference.
 The Zenodo archive of this repository serves as a secondary reference.
