@@ -3,6 +3,7 @@ temp_*
 temp.*
 temp/
 removed/
+o_png/
 .idea
 .DS_Store
 *.pdf
